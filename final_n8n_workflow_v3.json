@@ -1,0 +1,599 @@
+{
+  "name": "Examify AI Workflow v3",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "upload-syllabus",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1696,
+        80
+      ],
+      "id": "74b42857-ad6c-4757-a619-c951df5acd3a",
+      "name": "Webhook",
+      "webhookId": "d2095abc-94c4-4a1d-8a48-cadb459cd6cf"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\n\nreturn [\n  {\n    json: {\n      department: body.department,\n      year: body.year,\n      subject: body.subject,\n      text: body.data.text\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        -384
+      ],
+      "id": "0416aba2-e303-4dda-bbfc-0d49d177810f",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nconst text = input.text || \"\";\n\nconst chunkSize = 1000;\nconst overlap = 100;\n\nconst result = [];\n\nfor (let i = 0; i < text.length; i += (chunkSize - overlap)) {\n  result.push({\n    json: {\n      department: input.department,\n      year: input.year,\n      subject: input.subject,\n      text: text.slice(i, i + chunkSize)\n    }\n  });\n}\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        -384
+      ],
+      "id": "26b4e1b3-16f3-42f0-b0a0-b7a2265ee98e",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": "syllabus_chunks",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        -16,
+        -384
+      ],
+      "id": "2615e3cc-252c-4060-b9d6-82500bdd1f8a",
+      "name": "Postgres PGVector Store",
+      "credentials": {
+        "postgres": {
+          "id": "2UrWYhmx0YXdZpOo",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        -176
+      ],
+      "id": "736af33e-6ed5-4d6e-83c1-3fe21806d1e4",
+      "name": "Embeddings Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "04j55XmCXyAo6FIu",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{$json.text}}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        128,
+        -176
+      ],
+      "id": "e1b1adcf-2a53-477e-9f9b-6b2775a25b73",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "tableName": "syllabus_chunks",
+        "prompt": "={{$json.query}}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        160
+      ],
+      "id": "e7d6c501-d32b-4d03-81c9-5d695eef256b",
+      "name": "Postgres PGVector Store1",
+      "credentials": {
+        "postgres": {
+          "id": "2UrWYhmx0YXdZpOo",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        384
+      ],
+      "id": "3a76e93f-e7ff-4cbb-a974-1ee0c644dadd",
+      "name": "Embeddings Ollama1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "04j55XmCXyAo6FIu",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "aca80577-f5fc-4c4c-8e61-1dc4dae15719",
+              "leftValue": "={{$json.body.type}}",
+              "rightValue": "admin",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1312,
+        80
+      ],
+      "id": "0cb5b2ca-9f33-4285-83b9-9ddfcaecdf1a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an exam paper generator.\n\nUse only the syllabus context below.\n\nContext:\n{{$json.document.pageContent}}\n\nTeacher Request:\n{{$('Webhook').first().json.body.prompt}}\n\nAdditional Details:\nQuestion Type: {{$('Webhook').first().json.body.questionType}}\nNumber of Questions: {{$('Webhook').first().json.body.count}}\nDifficulty: {{$('Webhook').first().json.body.difficulty}}\n\nGenerate a proper exam paper.\n\nRules:\n- Use only topics from the syllabus context\n- Do not generate questions outside the syllabus\n- Follow the teacher request exactly\n- Generate exactly {{$('Webhook').first().json.body.count}} questions\n- Keep the difficulty level as {{$('Webhook').first().json.body.difficulty}}\n- If the syllabus does not contain enough information, output an empty array.\n\nCRITICAL OUTPUT FORMAT:\nYou MUST output ONLY valid JSON containing a \"questions\" array. Do not include markdown blocks or any other text.\n\nExample format for MCQ:\n{\n  \"questions\": [\n    {\n      \"questionText\": \"What is...\",\n      \"options\": [\"A. ...\", \"B. ...\", \"C. ...\", \"D. ...\"],\n      \"correctOption\": \"A\",\n      \"marks\": 1\n    }\n  ]\n}\n\nExample format for Descriptive/Short/Long questions:\n{\n  \"questions\": [\n    {\n      \"questionText\": \"Explain...\",\n      \"marks\": 5\n    }\n  ]\n}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1200,
+        160
+      ],
+      "id": "2fc3c901-2bf7-46dd-94a4-099b82b96b80",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseText": "={{$json.text}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1552,
+        160
+      ],
+      "id": "73905014-4f5b-4ccd-98f4-e4fbeb7e126a",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:8b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        352
+      ],
+      "id": "3f13eb6a-414e-4d84-9c32-7a91e26f38af",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "04j55XmCXyAo6FIu",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f9b46672-3517-47dd-9da8-6e65e80ad6e2",
+              "name": "promt",
+              "value": "=You are an exam paper generator.\n\nUse only the syllabus context below.\n\nContext:\n{{$json.document.pageContent}}\n\nTeacher Request:\n{{$('Webhook').first().json.body.prompt}}\n\nDepartment:\n{{$('Webhook').first().json.body.department}}\n\nYear:\n{{$('Webhook').first().json.body.year}}\n\nSubject:\n{{$('Webhook').first().json.body.subject}}\n\nQuestion Type:\n{{$('Webhook').first().json.body.questionType}}\n\nDifficulty:\n{{$('Webhook').first().json.body.difficulty}}\n\nNumber of Questions:\n{{$('Webhook').first().json.body.count}}\n\nRules:\n- Use only topics from the syllabus context\n- Use the specified subject, year and department\n- Generate exactly {{$('Webhook').first().json.body.count}} questions\n- Generate only {{$('Webhook').first().json.body.questionType}} questions\n- Keep the difficulty {{$('Webhook').first().json.body.difficulty}}\n- Do not include topics outside the syllabus",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        160
+      ],
+      "id": "78503c92-55b7-40e9-b58f-3c968f00a74e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst seen = new Set();\nconst result = [];\n\nfor (const item of items) {\n  const text = item.json.pageContent || item.json.text || \"\";\n\n  if (!seen.has(text)) {\n    seen.add(text);\n    result.push(item);\n  }\n}\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        160
+      ],
+      "id": "3d680ae8-f2b3-4479-8d22-47f6596c685c",
+      "name": "Deduplicate Retrieved Chunks"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        112,
+        160
+      ],
+      "id": "4c4d5817-6e6e-40c9-b3e4-d9b6e312a3c1",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Teacher Query:\n{{$('Webhook').first().json.body.prompt}}\n\nBelow are all retrieved syllabus chunks:\n\n{{$json}}\n\nSelect the 5 most relevant chunks for answering the teacher query.\n\nReturn ONLY valid JSON in this exact format:\n\n{\n  \"top_chunks\": [\n    {\n      \"text\": \"chunk 1 here\"\n    },\n    {\n      \"text\": \"chunk 2 here\"\n    },\n    {\n      \"text\": \"chunk 3 here\"\n    },\n    {\n      \"text\": \"chunk 4 here\"\n    },\n    {\n      \"text\": \"chunk 5 here\"\n    }\n  ]\n}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        320,
+        160
+      ],
+      "id": "f8556028-2784-4116-af03-f603629722ee",
+      "name": "Rerank Chunks"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:8b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        320,
+        384
+      ],
+      "id": "8305c039-6d07-4736-a8e8-ca9849f72709",
+      "name": "Ollama Chat Model1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "04j55XmCXyAo6FIu",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  let text = $input.first().json.text;\n  // Remove markdown formatting if present\n  if (text.indexOf('```') !== -1) {\n    text = text.replace(/```json\\n/g, '').replace(/```/g, '').trim();\n  }\n  const data = JSON.parse(text);\n\n  return (data.top_chunks || []).map(chunk => ({\n    json: {\n      text: chunk.text\n    }\n  }));\n} catch (e) {\n  // Fallback to all retrieved chunks if parsing fails\n  return $input.all();\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -96
+      ],
+      "id": "4c5a9426-f53b-4a55-b338-a550ee891589",
+      "name": "Parse Reranked"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Expand the following teacher query into 5 different search queries.\n\nTeacher Query:\n{{$json.body.prompt}}\n\nReturn only JSON in this format:\n{\n  \"queries\": [\n    \"...\",\n    \"...\",\n    \"...\",\n    \"...\",\n    \"...\"\n  ]\n}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -1024,
+        160
+      ],
+      "id": "118522e5-3f17-4a9e-bec3-d62a39372d62",
+      "name": "Expand Queries via Ollama"
+    },
+    {
+      "parameters": {
+        "jsCode": "const responseText = $input.first().json.text;\ntry {\n  let text = responseText;\n  // Remove markdown formatting if present\n  if (text.indexOf('```') !== -1) {\n    text = text.replace(/```json\\n/g, '').replace(/```/g, '').trim();\n  }\n  const parsed = JSON.parse(text);\n  return (parsed.queries || []).map(q => ({ json: { query: q } }));\n} catch (e) {\n  // Fallback to original prompt if parsing fails\n  return [{ json: { query: $('Webhook').first().json.body.prompt } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -688,
+        160
+      ],
+      "id": "15f35dbd-d439-4f16-9b3e-442c058fbb88",
+      "name": "Parse Expanded Queries"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:8b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -1024,
+        384
+      ],
+      "id": "4269b2a9-26db-4b79-b09b-abfa13c41ba8",
+      "name": "Ollama Chat Model2",
+      "credentials": {
+        "ollamaApi": {
+          "id": "04j55XmCXyAo6FIu",
+          "name": "Ollama account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Expand Queries via Ollama",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres PGVector Store1": {
+      "main": [
+        [
+          {
+            "node": "Deduplicate Retrieved Chunks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deduplicate Retrieved Chunks": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Rerank Chunks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rerank Chunks": {
+      "main": [
+        [
+          {
+            "node": "Parse Reranked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rerank Chunks",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Reranked": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expand Queries via Ollama": {
+      "main": [
+        [
+          {
+            "node": "Parse Expanded Queries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Expanded Queries": {
+      "main": [
+        [
+          {
+            "node": "Postgres PGVector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Expand Queries via Ollama",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "final-fixed-v3"
+}
