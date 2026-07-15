@@ -1,5 +1,4 @@
 const { Pool } = require('pg');
-const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
@@ -17,6 +16,7 @@ if (isPostgres) {
   });
 } else {
   // SQLite Fallback (Local Development)
+  const sqlite3 = require('sqlite3').verbose();
   const dbDir = path.join(__dirname, '../data');
   if (!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir, { recursive: true });

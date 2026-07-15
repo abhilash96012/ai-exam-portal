@@ -1,9 +1,6 @@
 const db = require('../config/database');
 const logger = require('../utils/logger');
 
-const db = require('../config/database');
-const logger = require('../utils/logger');
-
 const getSchema = (isPg) => {
   const PK = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
   
@@ -97,7 +94,7 @@ const getSchema = (isPg) => {
 async function init() {
   try {
     const isPg = db.isPostgres;
-    logger.info(\`Initializing \${isPg ? 'PostgreSQL' : 'SQLite'} database schema...\`);
+    logger.info(`Initializing ${isPg ? 'PostgreSQL' : 'SQLite'} database schema...`);
     await db.exec(getSchema(isPg));
     logger.info('Database tables initialized successfully.');
     process.exit(0);
