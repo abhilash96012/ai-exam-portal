@@ -35,6 +35,7 @@ router.post('/attempts/:attemptId/submit', submitExamRules, handleValidation, at
 
 // Results
 router.get('/results', resultController.getStudentResults);
+router.get('/results/exam/:examId', uuidParam('examId'), handleValidation, resultController.getStudentResultByExam);
 router.get('/results/:attemptId', uuidParam('attemptId'), handleValidation, resultController.getResultDetails);
 
 module.exports = router;

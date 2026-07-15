@@ -23,6 +23,7 @@ router.use(teacherOnly);
 
 // Exam CRUD
 router.post('/', createExamRules, handleValidation, examController.createExam);
+router.post('/publish', examController.publishGeneratedExam);
 router.get('/', examController.getTeacherExams);
 router.get('/:examId', uuidParam('examId'), handleValidation, examController.getExamById);
 router.put('/:examId', updateExamRules, handleValidation, examController.updateExam);
@@ -35,5 +36,6 @@ router.post('/:examId/generate-questions', uuidParam('examId'), handleValidation
 
 // Statistics
 router.get('/:examId/statistics', uuidParam('examId'), handleValidation, examController.getExamStatistics);
+router.get('/:examId/export-results', uuidParam('examId'), handleValidation, examController.exportResultsCsv);
 
 module.exports = router;

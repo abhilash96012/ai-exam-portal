@@ -32,7 +32,7 @@ interface TeacherQuestionResponse {
  */
 const getWebhookUrl = async (webhookType: 'syllabus' | 'question'): Promise<string> => {
   try {
-    const baseUrl =
+    const n8nUrl =
       import.meta.env.VITE_N8N_WEBHOOK_BASE || 'http://localhost:5678/webhook';
     const syllabusPath =
       import.meta.env.VITE_N8N_SYLLABUS_WEBHOOK_PATH || 'upload-syllabus';
@@ -40,7 +40,7 @@ const getWebhookUrl = async (webhookType: 'syllabus' | 'question'): Promise<stri
       import.meta.env.VITE_N8N_TEACHER_WEBHOOK_PATH || 'teacher-question';
 
     const selectedPath = webhookType === 'syllabus' ? syllabusPath : teacherPath;
-    const normalizedBase = String(baseUrl).replace(/\/+$/, '');
+    const normalizedBase = String(n8nUrl).replace(/\/+$/, '');
     const normalizedPath = String(selectedPath).replace(/^\/+/, '');
 
     return `${normalizedBase}/${normalizedPath}`;

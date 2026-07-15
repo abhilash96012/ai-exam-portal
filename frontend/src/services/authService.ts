@@ -9,6 +9,7 @@ export interface AuthUser {
   role: UserRole;
   branch?: string | null;
   year?: number | null;
+  section?: string | null;
   registerNumber?: string | null;
   profileCompleted?: boolean;
 }
@@ -53,10 +54,39 @@ const registerStudent = async (
   return response.data.data;
 };
 
+const registerAdmin = async (payload: {
+  name: string;
+  email: string;
+  password: string;
+  collegeId: string | number;
+  newCollegeName?: string;
+  newCollegeDomain?: string;
+}): Promise<AuthResponse> => {
+  const response = await api.post("/auth/register", {
+    ...payload,
+    role: "ADMIN",
+  });
+  return response.data.data;
+};
+
+const registerTeacher = async (payload: {
+  name: string;
+  email: string;
+  password: string;
+  collegeId: string | number;
+}): Promise<AuthResponse> => {
+  const response = await api.post("/auth/register", {
+    ...payload,
+    role: "TEACHER",
+  });
+  return response.data.data;
+};
+
 const completeStudentProfile = async (payload: {
   name: string;
   branch?: string | null;
   year?: number | null;
+  section?: string | null;
   registerNumber: string;
 }): Promise<AuthUser> => {
   const response = await api.put("/auth/complete-profile", payload);
@@ -71,6 +101,8 @@ const logout = async () => {
 export default {
   login,
   registerStudent,
+  registerAdmin,
+  registerTeacher,
   completeStudentProfile,
   logout,
 };

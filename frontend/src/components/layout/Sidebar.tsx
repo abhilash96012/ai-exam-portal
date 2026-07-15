@@ -87,6 +87,25 @@ const teacherNavItems: NavItem[] = [
       </svg>
     ),
   },
+  {
+    label: "Analytics",
+    path: "/teacher/analytics",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M11 3v18m-7-7h18"
+        />
+      </svg>
+    ),
+  },
 ];
 
 const studentNavItems: NavItem[] = [

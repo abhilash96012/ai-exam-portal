@@ -1,0 +1,5 @@
+name,email,register_number,branch,year,password
+John Doe,johndoe@gmail.com,REG1001,AIDS,1,student123
+Jane Smith,janesmith@sastra.ac.in,REG1002,AIDS,1,student123
+Bob Johnson,bobjohnson@gmail.com,REG1003,CSE,2,student123
+Alice Williams,alicewilliams@sastra.ac.in,REG1004,ECE,3,student123

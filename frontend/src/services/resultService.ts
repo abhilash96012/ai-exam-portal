@@ -14,6 +14,11 @@ export const getStudentResultByAttempt = async (attemptId: string) => {
   return response.data.data;
 };
 
+export const getStudentResultByExam = async (examId: string) => {
+  const response = await api.get(`/student/results/exam/${examId}`);
+  return response.data.data;
+};
+
 // TEACHER RESULTS
 
 export const getTeacherResultsSummary = async () => {
@@ -37,6 +42,7 @@ export const getResultDetails = async (attemptId: string) => {
 export default {
   getStudentResults,
   getStudentResultByAttempt,
+  getStudentResultByExam,
   getTeacherResultsSummary,
   getTeacherExamResults,
   getResultDetails,

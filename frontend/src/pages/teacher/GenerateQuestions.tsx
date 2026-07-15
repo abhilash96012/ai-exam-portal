@@ -60,9 +60,12 @@ const GenerateQuestions: React.FC = () => {
   const [loadingSubjects, setLoadingSubjects] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [generationMode, setGenerationMode] = useState<"prompt" | "file">("prompt");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [publishFormState, setPublishFormState] = useState({
     examName: "",
     description: "",
+    section: "",
     startDate: "",
     startTime: "",
     endDate: "",
@@ -85,7 +88,8 @@ const GenerateQuestions: React.FC = () => {
               year: generateFormState.year,
             },
           });
-          setSubjects(response.data);
+          const fetchedSubjects = Array.isArray(response.data) ? response.data : (response.data?.data || []);
+          setSubjects(fetchedSubjects);
           // Reset subject selection when department or year changes
           setGenerateFormState((prev) => ({
             ...prev,
@@ -121,17 +125,21 @@ const GenerateQuestions: React.FC = () => {
 
   // Validate form
   const isFormValid = useCallback(() => {
-    return (
+    const baseValid =
       generateFormState.department &&
       generateFormState.year &&
       generateFormState.subject &&
       generateFormState.questionType &&
       generateFormState.difficulty &&
       generateFormState.numQuestions &&
-      parseInt(generateFormState.numQuestions) > 0 &&
-      generateFormState.prompt
-    );
-  }, [generateFormState]);
+      parseInt(generateFormState.numQuestions) > 0;
+      
+    if (generationMode === "prompt") {
+      return baseValid && generateFormState.prompt;
+    } else {
+      return baseValid && selectedFile !== null;
+    }
+  }, [generateFormState, generationMode, selectedFile]);
 
   const handleGenerateQuestions = async () => {
     if (!isFormValid()) {
@@ -146,22 +154,32 @@ const GenerateQuestions: React.FC = () => {
 
     setIsGenerating(true);
     setError(null);
-    setSuccessMessage(null);
 
     try {
-      const payload = {
-        type: "teacher",
-        department: generateFormState.department,
-        year: generateFormState.year,
-        subject: generateFormState.subject,
-        questionType: generateFormState.questionType,
-        difficulty: generateFormState.difficulty,
-        numberOfQuestions: parseInt(generateFormState.numQuestions),
-        prompt: generateFormState.prompt,
-        additionalInstructions: generateFormState.additionalInstructions,
-      };
-
-      const response = await api.post("/teacher/generate-questions", payload);
+      let response;
+      if (generationMode === "prompt") {
+        const payload = {
+          prompt: generateFormState.prompt,
+          subject: generateFormState.subject,
+          questionType: generateFormState.questionType,
+          difficulty: generateFormState.difficulty,
+          numberOfQuestions: parseInt(generateFormState.numQuestions),
+        };
+        response = await api.post("/teacher/generate-questions-from-prompt", payload);
+      } else {
+        const formData = new FormData();
+        formData.append("document", selectedFile as File);
+        formData.append("subject", generateFormState.subject);
+        formData.append("questionType", generateFormState.questionType);
+        formData.append("difficulty", generateFormState.difficulty);
+        formData.append("numberOfQuestions", generateFormState.numQuestions);
+        
+        response = await api.post("/teacher/generate-questions-from-file", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
 
       if (response.data.success) {
         setGeneratedQuestions({
@@ -246,6 +264,7 @@ const GenerateQuestions: React.FC = () => {
         subject: generatedQuestions.subject,
         department: generatedQuestions.department,
         year: generatedQuestions.year,
+        section: publishFormState.section,
         startDate: publishFormState.startDate,
         startTime: publishFormState.startTime,
         endDate: publishFormState.endDate,
@@ -263,6 +282,7 @@ const GenerateQuestions: React.FC = () => {
         setPublishFormState({
           examName: "",
           description: "",
+          section: "",
           startDate: "",
           startTime: "",
           endDate: "",
@@ -420,6 +440,33 @@ const GenerateQuestions: React.FC = () => {
           <div className="relative overflow-hidden rounded-2xl border border-blue-100/80 bg-white/90 shadow-[0_20px_50px_-30px_rgba(30,64,175,0.45)] backdrop-blur-sm">
             <div className="pointer-events-none absolute -top-24 -right-20 h-56 w-56 rounded-full bg-blue-100/70 blur-3xl" />
             <div className="p-5 sm:p-7 space-y-6 relative">
+              
+              {/* Generation Mode Toggle */}
+              <div className="flex bg-slate-100 p-1 rounded-lg w-fit">
+                <button
+                  type="button"
+                  onClick={() => setGenerationMode("prompt")}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    generationMode === "prompt"
+                      ? "bg-white text-blue-700 shadow-sm"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  From Prompt
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGenerationMode("file")}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    generationMode === "file"
+                      ? "bg-white text-blue-700 shadow-sm"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  Upload Document
+                </button>
+              </div>
+
               {/* Row 1: Department, Year, Subject */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-4">
@@ -472,37 +519,23 @@ const GenerateQuestions: React.FC = () => {
                       className="mt-2 w-full rounded-lg border border-blue-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
                     >
                       <option value="">Select year</option>
-                      <option value="1-1">1-1</option>
-                      <option value="1-2">1-2</option>
-                      <option value="2-1">2-1</option>
-                      <option value="2-2">2-2</option>
-                      <option value="3-1">3-1</option>
-                      <option value="3-2">3-2</option>
-                      <option value="4-1">4-1</option>
-                      <option value="4-2">4-2</option>
+                      <option value="1">1st Year</option>
+                      <option value="2">2nd Year</option>
+                      <option value="3">3rd Year</option>
+                      <option value="4">4th Year</option>
                     </select>
                   </label>
 
                   <label className="text-sm font-medium text-slate-700">
-                    Subject Name *
-                    <select
+                    Subject *
+                    <input
+                      type="text"
                       name="subject"
                       value={generateFormState.subject}
                       onChange={handleInputChange}
-                      disabled={loadingSubjects || !subjects.length}
-                      className="mt-2 w-full rounded-lg border border-blue-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
-                    >
-                      <option value="">
-                        {loadingSubjects
-                          ? "Loading subjects..."
-                          : "Select subject"}
-                      </option>
-                      {subjects.map((subj) => (
-                        <option key={subj} value={subj}>
-                          {subj}
-                        </option>
-                      ))}
-                    </select>
+                      placeholder="e.g., Python Programming"
+                      className="mt-2 w-full rounded-lg border border-blue-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+                    />
                   </label>
                 </div>
               </div>
@@ -540,7 +573,7 @@ const GenerateQuestions: React.FC = () => {
                     >
                       <option value="">Select question type</option>
                       <option value="MCQ">MCQ</option>
-                      <option value="Descriptive">Descriptive</option>
+                      <option value="SUBJECTIVE">Subjective (Descriptive)</option>
                       <option value="2 Marks">2 Marks</option>
                       <option value="5 Marks">5 Marks</option>
                       <option value="Long Answer">Long Answer</option>
@@ -579,39 +612,59 @@ const GenerateQuestions: React.FC = () => {
                 </div>
               </div>
 
-              {/* Prompt Textarea */}
+              {/* Prompt/File Input */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100">
-                    <svg
-                      className="w-4 h-4 text-blue-600"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      />
-                    </svg>
+                    <Sparkles className="w-4 h-4 text-blue-600" />
                   </div>
                   <h3 className="text-sm font-semibold text-slate-900">
-                    Generation Prompt
+                    {generationMode === "prompt" ? "Generation Prompt" : "Upload Document"}
                   </h3>
                 </div>
-                <label className="text-sm font-medium text-slate-700 block">
-                  Prompt *
-                  <textarea
-                    name="prompt"
-                    placeholder="Example: Generate 5 difficult descriptive questions from Unit 1 focusing on CPU scheduling and synchronization."
-                    value={generateFormState.prompt}
-                    onChange={handleInputChange}
-                    rows={4}
-                    className="mt-2 w-full rounded-lg border border-blue-200 bg-white px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all resize-none"
-                  />
-                </label>
+                
+                {generationMode === "prompt" ? (
+                  <label className="text-sm font-medium text-slate-700 block">
+                    Prompt *
+                    <textarea
+                      name="prompt"
+                      placeholder="Example: Generate 5 difficult descriptive questions from Unit 1 focusing on CPU scheduling and synchronization."
+                      value={generateFormState.prompt}
+                      onChange={handleInputChange}
+                      rows={4}
+                      className="mt-2 w-full rounded-lg border border-blue-200 bg-white px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all resize-none"
+                    />
+                  </label>
+                ) : (
+                  <label className="text-sm font-medium text-slate-700 block">
+                    Upload Syllabus / Previous Exam (PDF or DOCX) *
+                    <div className="mt-2 flex justify-center rounded-lg border border-dashed border-blue-300 px-6 py-10 bg-blue-50/50 relative">
+                      <div className="text-center">
+                        <svg className="mx-auto h-12 w-12 text-blue-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                          <path fillRule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clipRule="evenodd" />
+                        </svg>
+                        <div className="mt-4 flex text-sm leading-6 text-gray-600 justify-center">
+                          <label htmlFor="file-upload" className="relative cursor-pointer rounded-md bg-white font-semibold text-blue-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-600 focus-within:ring-offset-2 hover:text-blue-500">
+                            <span>Upload a file</span>
+                            <input 
+                              id="file-upload" 
+                              name="file-upload" 
+                              type="file" 
+                              accept=".pdf,.docx" 
+                              className="sr-only" 
+                              onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                  setSelectedFile(e.target.files[0]);
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
+                        <p className="text-xs leading-5 text-gray-500 mt-2">{selectedFile ? selectedFile.name : "PDF or DOCX up to 10MB"}</p>
+                      </div>
+                    </div>
+                  </label>
+                )}
               </div>
 
               {/* Generate Button */}
@@ -841,7 +894,7 @@ const GenerateQuestions: React.FC = () => {
                     </h3>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <label className="text-sm font-medium text-slate-700">
                       Exam Name *
                       <input
@@ -852,6 +905,22 @@ const GenerateQuestions: React.FC = () => {
                           setPublishFormState((prev) => ({
                             ...prev,
                             examName: e.target.value,
+                          }))
+                        }
+                        className="mt-2 w-full rounded-lg border border-green-200 bg-white px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all"
+                      />
+                    </label>
+
+                    <label className="text-sm font-medium text-slate-700">
+                      Section
+                      <input
+                        type="text"
+                        placeholder="e.g., A, B, or All"
+                        value={publishFormState.section}
+                        onChange={(e) =>
+                          setPublishFormState((prev) => ({
+                            ...prev,
+                            section: e.target.value,
                           }))
                         }
                         className="mt-2 w-full rounded-lg border border-green-200 bg-white px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all"

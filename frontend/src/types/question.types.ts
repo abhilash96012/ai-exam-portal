@@ -4,4 +4,6 @@ export interface Question {
   questionText: string;
   options: string[];
   correctAnswerIndex: number;
+  questionType?: string;
+  modelAnswer?: string;
 }

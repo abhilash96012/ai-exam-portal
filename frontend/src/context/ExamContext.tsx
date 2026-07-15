@@ -2,9 +2,9 @@ import React, { createContext, useContext, useState } from "react";
 
 interface ExamContextType {
   currentQuestion: number;
-  answers: Record<number, number>; // questionIndex -> optionIndex
+  answers: Record<number, any>; // questionIndex -> optionIndex OR text string
   setCurrentQuestion: (index: number) => void;
-  selectAnswer: (questionIndex: number, optionIndex: number) => void;
+  selectAnswer: (questionIndex: number, value: any) => void;
   resetExam: () => void;
 }
 
@@ -14,12 +14,12 @@ export const ExamProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [answers, setAnswers] = useState<Record<number, any>>({});
 
-  const selectAnswer = (questionIndex: number, optionIndex: number) => {
+  const selectAnswer = (questionIndex: number, value: any) => {
     setAnswers((prev) => ({
       ...prev,
-      [questionIndex]: optionIndex,
+      [questionIndex]: value,
     }));
   };
 

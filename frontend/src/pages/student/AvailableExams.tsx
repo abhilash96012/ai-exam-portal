@@ -55,7 +55,7 @@ const AvailableExams: React.FC = () => {
   });
 
   const availableCount = exams.filter(
-    (e) => (e.status as string | undefined) === "available",
+    (e) => (e.status as string | undefined) === "available" || (e.status as string | undefined) === "scheduled",
   ).length;
   const completedCount = exams.filter(
     (e) => (e.status as string | undefined) === "completed",
@@ -263,7 +263,9 @@ const AvailableExams: React.FC = () => {
                         className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                           exam.status === "completed"
                             ? "bg-green-100"
-                            : "bg-blue-100"
+                            : exam.status === "expired"
+                              ? "bg-red-100"
+                              : "bg-blue-100"
                         }`}
                       >
                         {exam.status === "completed" ? (
@@ -278,6 +280,20 @@ const AvailableExams: React.FC = () => {
                               strokeLinejoin="round"
                               strokeWidth={2}
                               d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                        ) : exam.status === "expired" ? (
+                          <svg
+                            className="w-5 h-5 text-red-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                             />
                           </svg>
                         ) : (
@@ -373,6 +389,14 @@ const AvailableExams: React.FC = () => {
                           View Result
                         </Link>
                       </>
+                    ) : exam.status === "scheduled" ? (
+                      <span className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                        Scheduled
+                      </span>
+                    ) : exam.status === "expired" ? (
+                      <span className="px-3 py-1.5 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                        Expired
+                      </span>
                     ) : (
                       <Link
                         to={`/student/exam/${exam.id}/instructions`}

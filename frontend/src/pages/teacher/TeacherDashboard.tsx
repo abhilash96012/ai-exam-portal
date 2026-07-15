@@ -39,12 +39,14 @@ const TeacherDashboard: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "PUBLISHED":
+      case "ACTIVE":
         return "bg-green-100 text-green-700 border border-green-200";
+      case "SCHEDULED":
+        return "bg-blue-100 text-blue-700 border border-blue-200";
       case "DRAFT":
         return "bg-yellow-100 text-yellow-700 border border-yellow-200";
-      case "ACTIVE":
-        return "bg-blue-100 text-blue-700 border border-blue-200";
+      case "EXPIRED":
+        return "bg-red-100 text-red-700 border border-red-200";
       default:
         return "bg-gray-100 text-gray-700 border border-gray-200";
     }
@@ -64,7 +66,7 @@ const TeacherDashboard: React.FC = () => {
   };
 
   const getActionButtons = (exam: ExamSummary) => {
-    if (exam.status === "PUBLISHED" || exam.status === "ACTIVE") {
+    if (exam.status !== "DRAFT") {
       return (
         <>
           <Link
@@ -78,6 +80,12 @@ const TeacherDashboard: React.FC = () => {
             className="px-4 py-1.5 bg-yellow-500 text-white text-sm font-medium rounded-md hover:bg-yellow-600 transition-colors"
           >
             Results
+          </Link>
+          <Link
+            to={`/teacher/exams/${exam.id}/analytics`}
+            className="px-4 py-1.5 bg-purple-600 text-white text-sm font-medium rounded-md hover:bg-purple-700 transition-colors"
+          >
+            Analytics
           </Link>
         </>
       );
@@ -182,11 +190,7 @@ const TeacherDashboard: React.FC = () => {
                 <span
                   className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${getStatusBadge(exam.status)}`}
                 >
-                  {exam.status === "PUBLISHED"
-                    ? "Published"
-                    : exam.status === "DRAFT"
-                      ? "Draft"
-                      : "Active"}
+                  {exam.status.charAt(0) + exam.status.slice(1).toLowerCase()}
                 </span>
               </div>
               <div className="flex gap-2">{getActionButtons(exam)}</div>
@@ -226,11 +230,7 @@ const TeacherDashboard: React.FC = () => {
                     <span
                       className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${getStatusBadge(exam.status)}`}
                     >
-                      {exam.status === "PUBLISHED"
-                        ? "Published"
-                        : exam.status === "DRAFT"
-                          ? "Draft"
-                          : "Active"}
+                      {exam.status.charAt(0) + exam.status.slice(1).toLowerCase()}
                     </span>
                   </td>
                   <td className="px-4 sm:px-6 py-3 sm:py-4">

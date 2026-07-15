@@ -17,14 +17,32 @@ export const getTeacherExams = async (params?: any) => {
   const exams = response.data.data?.exams ?? [];
 
   // Normalise into the simpler shape the teacher UI expects
-  return exams.map((exam: any) => ({
-    id: exam.id,
-    title: exam.title,
-    subject: exam.description || "General",
-    status: exam.status,
-    // Keep original exam in case callers need extra fields
-    _raw: exam,
-  }));
+  return exams.map((exam: any) => {
+    let computedStatus = "DRAFT";
+    
+    if (exam.is_published) {
+      const now = new Date();
+      const startTime = exam.start_time ? new Date(exam.start_time) : null;
+      const endTime = exam.end_time ? new Date(exam.end_time) : null;
+
+      if (startTime && now < startTime) {
+        computedStatus = "SCHEDULED";
+      } else if (endTime && now > endTime) {
+        computedStatus = "EXPIRED";
+      } else {
+        computedStatus = "ACTIVE";
+      }
+    }
+
+    return {
+      id: exam.id,
+      title: exam.title,
+      subject: exam.description || "General",
+      status: computedStatus,
+      // Keep original exam in case callers need extra fields
+      _raw: exam,
+    };
+  });
 };
 
 export const getExamById = async (examId: string) => {
@@ -84,6 +102,13 @@ export const getExamStatistics = async (examId: string, params?: any) => {
   return response.data;
 };
 
+export const exportResultsCsv = async (examId: string) => {
+  const response = await api.get(`/exams/${examId}/export-results`, {
+    responseType: "blob",
+  });
+  return response.data;
+};
+
 // STUDENT - EXAMS
 
 export const getStudentExams = async (params?: any) => {
@@ -92,22 +117,32 @@ export const getStudentExams = async (params?: any) => {
   const exams = response.data.data?.exams ?? [];
 
   // Normalise into the simpler shape the student UI expects
-  return exams.map((exam: any) => ({
-    id: exam.id,
-    title: exam.title,
-    subject: exam.description || "General",
-    // UI uses `duration` and `totalQuestions`; backend sends camelCase fields
-    duration: exam.durationMinutes,
-    totalQuestions: exam.totalQuestions,
-    // Map backend status / attempt info to high-level UI states
-    status:
-      exam.attemptStatus === "SUBMITTED"
-        ? "completed"
-        : "available",
-    deadline: exam.endTime || null,
-    // Keep original exam in case callers need extra fields
-    _raw: exam,
-  }));
+  return exams.map((exam: any) => {
+    let computedStatus = "available";
+    if (exam.attemptStatus === "SUBMITTED") {
+      computedStatus = "completed";
+    } else {
+      const now = new Date();
+      if (exam.start_time && now < new Date(exam.start_time)) {
+        computedStatus = "scheduled";
+      } else if (exam.end_time && now > new Date(exam.end_time)) {
+        computedStatus = "expired";
+      }
+    }
+
+    return {
+      id: exam.id,
+      title: exam.title,
+      subject: exam.description || "General",
+      // UI uses `duration` and `totalQuestions`; backend sends camelCase fields
+      duration: exam.durationMinutes,
+      totalQuestions: exam.totalQuestions,
+      status: computedStatus,
+      deadline: exam.end_time || null,
+      // Keep original exam in case callers need extra fields
+      _raw: exam,
+    };
+  });
 };
 
 export default {
@@ -122,6 +157,7 @@ export default {
   uploadSyllabus,
   generateQuestions,
   getExamStatistics,
+  exportResultsCsv,
   // student
   getStudentExams,
 };

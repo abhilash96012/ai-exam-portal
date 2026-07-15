@@ -80,7 +80,8 @@ const studentAuthService = {
     otp: string,
     password: string,
     confirmPassword: string,
-    name: string
+    name: string,
+    collegeId?: number | null
   ): Promise<VerifyOTPResponse> {
     try {
       const response = await api.post('/auth/student/verify-otp-and-register', {
@@ -89,11 +90,26 @@ const studentAuthService = {
         password,
         confirmPassword,
         name,
+        collegeId,
       });
       return response.data;
     } catch (error: any) {
       throw new Error(
         error.response?.data?.message || 'Failed to verify OTP. Please try again.'
+      );
+    }
+  },
+
+  /**
+   * Get all registered colleges
+   */
+  async getColleges(): Promise<{ id: number; name: string }[]> {
+    try {
+      const response = await api.get('/auth/colleges');
+      return response.data?.data || [];
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to load colleges.'
       );
     }
   },

@@ -14,6 +14,7 @@ const teacherRoutes = require('./teacher.routes');
 const adminRoutes = require('./admin.routes');
 const healthRoutes = require('./health.routes');
 const n8nRoutes = require('./n8n.routes');
+const analyticsRoutes = require('./analytics.routes');
 
 // Mount routes
 router.use('/auth', authRoutes);
@@ -24,5 +25,6 @@ router.use('/teacher', teacherRoutes);
 router.use('/admin', adminRoutes);
 router.use('/health', healthRoutes);
 router.use('/webhook', n8nRoutes);
+router.use('/teacher/analytics', analyticsRoutes);
 
 module.exports = router;

@@ -17,7 +17,14 @@ const Instructions: React.FC = () => {
     "Review all your answers before final submission.",
   ];
 
-  const handleStartExam = () => {
+  const handleStartExam = async () => {
+    try {
+      if (document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch (err) {
+      console.warn("Fullscreen request failed:", err);
+    }
     navigate(`/student/exam/${examId}`);
   };
 

@@ -21,8 +21,10 @@ const StudentOTPVerification: React.FC = () => {
     name: "",
     password: "",
     confirmPassword: "",
+    collegeId: "",
   });
 
+  const [colleges, setColleges] = useState<{ id: number; name: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +32,19 @@ const StudentOTPVerification: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
   const [canResendOTP, setCanResendOTP] = useState(false);
+
+  // Fetch colleges list on mount
+  useEffect(() => {
+    const loadColleges = async () => {
+      try {
+        const list = await studentAuthService.getColleges();
+        setColleges(list);
+      } catch (err: any) {
+        console.error("Failed to load colleges:", err);
+      }
+    };
+    loadColleges();
+  }, []);
 
   // Redirect if no email provided
   useEffect(() => {
@@ -59,7 +74,7 @@ const StudentOTPVerification: React.FC = () => {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormState((prev) => ({
       ...prev,
@@ -91,6 +106,11 @@ const StudentOTPVerification: React.FC = () => {
       return;
     }
 
+    if (!formState.collegeId) {
+      setError("Please select your college");
+      return;
+    }
+
     if (!formState.password || formState.password.length < 6) {
       setError("Password must be at least 6 characters");
       return;
@@ -111,7 +131,8 @@ const StudentOTPVerification: React.FC = () => {
         formState.otp,
         formState.password,
         formState.confirmPassword,
-        formState.name
+        formState.name,
+        formState.collegeId ? Number(formState.collegeId) : null
       );
 
       if (response.data) {
@@ -243,6 +264,28 @@ const StudentOTPVerification: React.FC = () => {
               disabled={isLoading}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
+          </div>
+
+          {/* College Input */}
+          <div>
+            <label htmlFor="collegeId" className="block text-sm font-medium text-gray-700 mb-2">
+              Select Your College *
+            </label>
+            <select
+              id="collegeId"
+              name="collegeId"
+              value={formState.collegeId}
+              onChange={handleInputChange}
+              disabled={isLoading}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+            >
+              <option value="">Select your college</option>
+              {colleges.map((col) => (
+                <option key={col.id} value={col.id}>
+                  {col.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Password Input */}

@@ -36,8 +36,8 @@ const StudentResults: React.FC = () => {
     fetchResults();
   }, []);
 
-  const handleViewDetails = (attemptId: string) => {
-    navigate(`/student/exam/result`, { state: { attemptId } });
+  const handleViewDetails = (attemptId: string, examId: string) => {
+    navigate(`/student/exam/${examId}/result`, { state: { attemptId } });
   };
 
   if (isLoading) {
@@ -123,7 +123,7 @@ const StudentResults: React.FC = () => {
                     </td>
                     <td className="px-4 sm:px-6 py-3 sm:py-4 text-right">
                       <button
-                        onClick={() => handleViewDetails(result.attemptId)}
+                        onClick={() => handleViewDetails(result.attemptId, result.examId)}
                         className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                       >
                         View

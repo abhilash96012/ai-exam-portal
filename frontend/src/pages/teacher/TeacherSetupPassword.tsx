@@ -19,32 +19,36 @@ const TeacherSetupPassword: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [manualToken, setManualToken] = useState("");
+  const [activeToken, setActiveToken] = useState(token);
 
   useEffect(() => {
     const loadInvite = async () => {
-      if (!token) {
-        setError("Invitation token is missing");
+      if (!activeToken) {
         setIsLoading(false);
         return;
       }
 
+      setIsLoading(true);
+      setError(null);
       try {
-        const data = await adminService.getTeacherInviteDetails(token);
+        const data = await adminService.getTeacherInviteDetails(activeToken);
         setDetails(data);
       } catch (err: any) {
         setError(err?.message || "Invalid or expired invitation");
+        setDetails(null);
       } finally {
         setIsLoading(false);
       }
     };
 
     loadInvite();
-  }, [token]);
+  }, [activeToken]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!token) {
+    if (!activeToken) {
       setError("Invitation token is missing");
       return;
     }
@@ -64,7 +68,7 @@ const TeacherSetupPassword: React.FC = () => {
 
     try {
       await adminService.completeTeacherInvite({
-        token,
+        token: activeToken,
         password,
         confirmPassword,
       });
@@ -88,6 +92,34 @@ const TeacherSetupPassword: React.FC = () => {
 
         {isLoading && (
           <div className="text-sm text-gray-600">Validating invitation...</div>
+        )}
+
+        {!isLoading && !details && (
+          <div className="space-y-4 mb-4">
+            <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-blue-700 leading-relaxed">
+              If the link in your email did not open properly, paste the <strong>Invitation Token / Code</strong> from your invitation list below to verify your account.
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Invitation Code
+              </label>
+              <input
+                type="text"
+                placeholder="Paste invitation token here"
+                value={manualToken}
+                onChange={(e) => setManualToken(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveToken(manualToken.trim())}
+              disabled={!manualToken.trim()}
+              className="w-full rounded-lg bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700 disabled:opacity-50"
+            >
+              Verify Code
+            </button>
+          </div>
         )}
 
         {!isLoading && details && (

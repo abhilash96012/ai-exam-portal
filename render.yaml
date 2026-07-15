@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: ai-exam-portal-backend
+    env: node
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: DATABASE_URL
+        sync: false # Set this securely in Render dashboard
+      - key: FRONTEND_URL
+        sync: false # Set this to your Vercel URL
+      - key: JWT_SECRET
+        generateValue: true
+      - key: OLLAMA_API_URL
+        value: http://localhost:11434/api/generate

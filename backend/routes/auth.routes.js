@@ -23,6 +23,7 @@ router.post('/google', authController.googleAuth);
 router.post('/refresh-token', authController.refreshToken);
 
 // Student OTP verification routes (public)
+router.get('/colleges', authController.getColleges);
 router.post('/student/send-otp', authController.sendStudentOTP);
 router.post('/student/verify-otp-and-register', authController.verifyStudentOTPAndRegister);
 router.post('/student/resend-otp', authController.resendStudentOTP);

@@ -11,9 +11,11 @@ export const startExam = async (examId: string) => {
 export const submitAttempt = async (
   attemptId: string,
   answers: { questionId: string; selectedOption: string }[],
+  tabSwitchCount?: number
 ) => {
   const response = await api.post(`/student/attempts/${attemptId}/submit`, {
     answers,
+    tabSwitchCount: tabSwitchCount ?? 0,
   });
   // Backend wraps payload as { success, status, message, data }
   return response.data.data;

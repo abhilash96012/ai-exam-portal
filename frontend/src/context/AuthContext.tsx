@@ -11,6 +11,7 @@ interface User {
   role: UserRole;
   branch?: string | null;
   year?: number | null;
+  section?: string | null;
   registerNumber?: string | null;
   profileCompleted?: boolean;
 }
@@ -84,6 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                   role: me.role,
                   branch: me.branch ?? null,
                   year: me.year ?? null,
+                  section: me.section ?? null,
                   registerNumber: me.registerNumber ?? null,
                 };
                 hydratedProfileCompleted = Boolean(me.profileCompleted);

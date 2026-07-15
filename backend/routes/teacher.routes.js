@@ -18,9 +18,13 @@ const {
 router.use(authenticate);
 router.use(teacherOnly);
 
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
+
 // Question Generation
 router.get('/subjects', teacherController.getSubjects);
 router.post('/generate-questions-from-prompt', aiLimiter, handleValidation, teacherController.generateQuestionsFromPrompt);
+router.post('/generate-questions-from-file', aiLimiter, upload.single('document'), teacherController.generateQuestionsFromFile);
 
 // Results
 router.get('/results', resultController.getTeacherAllResults);

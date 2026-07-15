@@ -14,6 +14,8 @@ interface ExamData {
   totalQuestions: number;
   difficulty: string;
   status: string;
+  startTime: string;
+  endTime: string;
 }
 
 const EditExam: React.FC = () => {
@@ -33,6 +35,8 @@ const EditExam: React.FC = () => {
     totalQuestions: 10,
     difficulty: "MEDIUM",
     status: "DRAFT",
+    startTime: "",
+    endTime: "",
   });
 
   useEffect(() => {
@@ -55,6 +59,8 @@ const EditExam: React.FC = () => {
           totalQuestions: exam.total_questions ?? exam.totalQuestions ?? 10,
           difficulty: "MEDIUM",
           status: exam.status ?? "DRAFT",
+          startTime: exam.start_time ?? exam.startTime ?? "",
+          endTime: exam.end_time ?? exam.endTime ?? "",
         });
       } catch (err) {
         setError("Failed to load exam details");
@@ -95,6 +101,8 @@ const EditExam: React.FC = () => {
         branch: formData.branch,
         year: Number(formData.semester) || undefined,
         durationMinutes: formData.duration,
+        startTime: formData.startTime || null,
+        endTime: formData.endTime || null,
       });
       navigate(`/teacher/exams/${examId}`);
     } catch (err) {

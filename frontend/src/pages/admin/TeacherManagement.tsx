@@ -156,6 +156,9 @@ const TeacherManagement: React.FC = () => {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
                   Expires
                 </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                  Action
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -175,6 +178,21 @@ const TeacherManagement: React.FC = () => {
                   </td>
                   <td className="px-4 py-3 text-gray-700">
                     {new Date(invite.expires_at).toLocaleString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    {invite.status === "PENDING" && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const link = `${window.location.origin}/teacher/setup-password?token=${invite.token}`;
+                          navigator.clipboard.writeText(link);
+                          alert("Invitation link copied to clipboard!");
+                        }}
+                        className="text-xs font-semibold text-blue-600 hover:text-blue-800"
+                      >
+                        Copy Link
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -32,6 +32,56 @@ const Exam: React.FC = () => {
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [tabSwitchCount, setTabSwitchCount] = useState(0);
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  const handleSubmitWithCheat = async (forcedCount: number) => {
+    if (!attemptId) return;
+    setIsSubmitting(true);
+    try {
+      const optionMap = ["A", "B", "C", "D"];
+      const payloadAnswers = questions
+        .map((q, index) => {
+          const selected = answers[index];
+          if (selected === undefined || selected === "") return null;
+          
+          if (q.questionType === 'SUBJECTIVE') {
+            return {
+              questionId: q.id,
+              textAnswer: selected as string,
+            };
+          }
+
+          return {
+            questionId: q.id,
+            selectedOption: optionMap[selected as number],
+          };
+        })
+        .filter(Boolean) as { questionId: string; selectedOption?: string; textAnswer?: string }[];
+
+      const submitData = await attemptService.submitAttempt(
+        attemptId,
+        payloadAnswers,
+        forcedCount
+      );
+
+      const attemptResultId = submitData?.attemptId || submitData?.result?.attemptId || attemptId;
+
+      if (document.exitFullscreen && document.fullscreenElement) {
+        await document.exitFullscreen().catch(err => console.log(err));
+      }
+
+      navigate(`/student/exam/${examId}/result`, {
+        state: { attemptId: attemptResultId },
+      });
+    } catch (error) {
+      console.error("Failed to submit exam:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -40,14 +90,13 @@ const Exam: React.FC = () => {
 
         const data = await attemptService.startExam(examId);
 
-        // Map backend questions to frontend Question shape
         const mappedQuestions: Question[] = data.questions.map(
           (q: any): Question => ({
             id: q.id,
             examId: q.exam_id,
             questionText: q.question_text,
+            questionType: q.question_type || 'MCQ',
             options: [q.option_a, q.option_b, q.option_c, q.option_d],
-            // Students don't see the correct answer; keep a placeholder index
             correctAnswerIndex: 0,
           }),
         );
@@ -60,38 +109,95 @@ const Exam: React.FC = () => {
           totalQuestions: data.exam.totalQuestions,
         });
         resetExam();
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to fetch questions:", error);
+        setFetchError(error?.message || "Failed to load exam questions. Please try again.");
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchQuestions();
-  }, [examId, resetExam]);
+  }, [examId]);
+
+  useEffect(() => {
+    if (!attemptId || isSubmitting || isLoading) return;
+
+    const startTime = Date.now();
+    const GRACE_PERIOD_MS = 3000;
+
+    const handleCheatDetection = () => {
+      if (Date.now() - startTime < GRACE_PERIOD_MS) return;
+
+      if (document.visibilityState === "hidden") {
+        setTabSwitchCount((prev) => {
+          const nextCount = prev + 1;
+          if (nextCount >= 3) {
+            handleSubmitWithCheat(nextCount);
+            return nextCount;
+          } else {
+            setShowWarningModal(true);
+            return nextCount;
+          }
+        });
+      }
+    };
+
+    const handleFullscreenChange = () => {
+      if (Date.now() - startTime < GRACE_PERIOD_MS) return;
+
+      const isCurrentlyFullscreen = !!document.fullscreenElement;
+      setIsFullscreen(isCurrentlyFullscreen);
+
+      if (!isCurrentlyFullscreen && !isSubmitting) {
+        setTabSwitchCount((prev) => {
+          const nextCount = prev + 1;
+          if (nextCount >= 3) {
+            handleSubmitWithCheat(nextCount);
+            return nextCount;
+          } else {
+            setShowWarningModal(true);
+            return nextCount;
+          }
+        });
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleCheatDetection);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleCheatDetection);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, [attemptId, questions, answers, isSubmitting, isLoading]);
 
   const handleTimeUp = () => {
     handleSubmit();
   };
 
-  const handleSelectOption = async (optionIndex: number) => {
+  const handleSelectOption = async (value: any) => {
     const current = questions[currentQuestion];
-
-    // Update local selection immediately for responsive UI
-    selectAnswer(currentQuestion, optionIndex);
+    selectAnswer(currentQuestion, value);
 
     if (!attemptId || !current) {
       return;
     }
 
     try {
-      const optionMap = ["A", "B", "C", "D"];
-      await attemptService.saveAnswer(attemptId, {
-        questionId: current.id,
-        selectedOption: optionMap[optionIndex],
-      });
+      if (current.questionType === 'SUBJECTIVE') {
+        await attemptService.saveAnswer(attemptId, {
+          questionId: current.id,
+          textAnswer: value,
+        });
+      } else {
+        const optionMap = ["A", "B", "C", "D"];
+        await attemptService.saveAnswer(attemptId, {
+          questionId: current.id,
+          selectedOption: optionMap[value as number],
+        });
+      }
     } catch (error) {
-      // Don't block the UI on save failure; log for debugging
       console.error("Failed to save answer:", error);
     }
   };
@@ -107,20 +213,33 @@ const Exam: React.FC = () => {
       const payloadAnswers = questions
         .map((q, index) => {
           const selected = answers[index];
-          if (selected === undefined) return null;
+          if (selected === undefined || selected === "") return null;
+          
+          if (q.questionType === 'SUBJECTIVE') {
+            return {
+              questionId: q.id,
+              textAnswer: selected as string,
+            };
+          }
+
           return {
             questionId: q.id,
-            selectedOption: optionMap[selected],
+            selectedOption: optionMap[selected as number],
           };
         })
-        .filter(Boolean) as { questionId: string; selectedOption: string }[];
+        .filter(Boolean) as { questionId: string; selectedOption?: string; textAnswer?: string }[];
 
       const submitData = await attemptService.submitAttempt(
         attemptId,
         payloadAnswers,
+        tabSwitchCount
       );
 
-      const attemptResultId = submitData?.result?.attemptId;
+      const attemptResultId = submitData?.attemptId || submitData?.result?.attemptId || attemptId;
+
+      if (document.exitFullscreen && document.fullscreenElement) {
+        await document.exitFullscreen().catch(err => console.log(err));
+      }
 
       navigate(`/student/exam/${examId}/result`, {
         state: { attemptId: attemptResultId },
@@ -152,8 +271,69 @@ const Exam: React.FC = () => {
 
   const answeredQuestions = Object.keys(answers).map(Number);
 
+  if (fetchError) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-sm border w-full max-w-md p-6 text-center space-y-4">
+          <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto border border-red-500/20">
+            <span className="text-2xl">⚠️</span>
+          </div>
+          <h1 className="text-lg font-semibold text-gray-900 font-bold">Exam Access Blocked</h1>
+          <p className="text-sm text-gray-500 leading-relaxed">
+            {fetchError}
+          </p>
+          <Button onClick={() => navigate("/student/dashboard")} fullWidth>
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return <Loader fullScreen text="Loading exam..." />;
+  }
+
+  if (!isFullscreen) {
+    const isInitialStart = tabSwitchCount === 0;
+
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 text-white">
+        <div className="max-w-md w-full text-center space-y-6 bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl">
+          <div className="w-16 h-16 bg-blue-500/10 text-blue-500 rounded-full flex items-center justify-center mx-auto border border-blue-500/20">
+            <span className="text-2xl">{isInitialStart ? "📝" : "🔒"}</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold">
+            {isInitialStart ? "Start Proctored Exam" : "Exam Interface Locked"}
+          </h2>
+          <p className="text-slate-400 text-sm leading-relaxed">
+            {isInitialStart
+              ? "To start writing this exam, please enter fullscreen mode. Your camera and tab activity will be monitored."
+              : "Leaving fullscreen mode is not allowed during this proctored exam. A violation alert has been recorded."}
+          </p>
+          {!isInitialStart && (
+            <div className="bg-slate-700/50 rounded-lg p-4 text-sm border border-slate-600">
+              Anti-Cheat Violations: <span className="text-red-500 font-bold">{tabSwitchCount} / 3</span>
+            </div>
+          )}
+          <button
+            onClick={async () => {
+              try {
+                if (document.documentElement.requestFullscreen) {
+                  await document.documentElement.requestFullscreen();
+                  setIsFullscreen(true);
+                }
+              } catch (err) {
+                console.error("Failed to request fullscreen:", err);
+              }
+            }}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg text-sm"
+          >
+            {isInitialStart ? "Enter Fullscreen & Start Exam" : "Re-enter Fullscreen Mode"}
+          </button>
+        </div>
+      </div>
+    );
   }
 
   const currentQ = questions[currentQuestion];
@@ -262,6 +442,29 @@ const Exam: React.FC = () => {
               fullWidth
             >
               Continue Exam
+            </Button>
+          </div>
+        </div>
+      </Modal>
+      {/* Anti-Cheat Warning Modal */}
+      <Modal
+        isOpen={showWarningModal}
+        onClose={() => setShowWarningModal(false)}
+        title="⚠️ Anti-Cheat Warning"
+      >
+        <div className="space-y-4">
+          <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3 leading-relaxed">
+            <span className="font-bold">Warning:</span> Tab-switching, window minimization, or leaving full screen has been detected!
+          </div>
+          <p className="text-gray-700 text-sm">
+            Please focus on the exam screen. You have switched screens <span className="font-bold text-red-600">{tabSwitchCount} / 3</span> times.
+          </p>
+          <p className="text-sm font-semibold text-gray-800">
+            If you switch screens 3 times, your exam will be automatically submitted immediately!
+          </p>
+          <div className="flex pt-2">
+            <Button onClick={() => setShowWarningModal(false)} fullWidth>
+              I Understand, Continue Exam
             </Button>
           </div>
         </div>

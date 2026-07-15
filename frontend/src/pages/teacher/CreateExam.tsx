@@ -18,12 +18,15 @@ const CreateExam: React.FC = () => {
   const [examTitle, setExamTitle] = useState("");
   const [branch, setBranch] = useState("");
   const [year, setYear] = useState("");
+  const [section, setSection] = useState("");
   const [duration, setDuration] = useState(60);
   const [randomizeQuestions, setRandomizeQuestions] = useState(false);
   const [examStatus, setExamStatus] = useState<"DRAFT" | "PUBLISHED">("DRAFT");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
 
   // AI generation parameters
   const [questionCount, setQuestionCount] = useState<number>(10);
@@ -119,9 +122,12 @@ const CreateExam: React.FC = () => {
       description: null,
       branch,
       year: Number(year),
+      section: section || null,
       durationMinutes: duration,
       passPercentage: 40,
       randomizeQuestions,
+      startTime: startTime || null,
+      endTime: endTime || null,
     });
 
     const newExamId = createResponse.data.exam.id;
@@ -163,19 +169,20 @@ const CreateExam: React.FC = () => {
 
     const mappedQuestions: Question[] = backendQuestions
       .map((q: any, index: number): Question | null => {
-        const questionText = (q.question_text || q.questionText || "")
+        const questionText = (q.question_text || q.questionText || q.question || "")
           .toString()
           .trim();
         const options = [
-          q.option_a || q.optionA || "",
-          q.option_b || q.optionB || "",
-          q.option_c || q.optionC || "",
-          q.option_d || q.optionD || "",
+          q.option_a || q.optionA || (q.options && q.options[0]) || "",
+          q.option_b || q.optionB || (q.options && q.options[1]) || "",
+          q.option_c || q.optionC || (q.options && q.options[2]) || "",
+          q.option_d || q.optionD || (q.options && q.options[3]) || "",
         ].map((opt) => opt.toString().trim());
-        const correctLetter = (q.correct_option || q.correctOption || "")
-          .toString()
-          .toUpperCase();
-        const correctAnswerIndex = optionIndexMap[correctLetter];
+        
+        let correctAnswerIndex = optionIndexMap[(q.correct_option || q.correctOption || "").toString().toUpperCase()];
+        if (correctAnswerIndex === undefined && q.correctAnswer !== undefined) {
+          correctAnswerIndex = q.correctAnswer;
+        }
 
         if (!questionText) return null;
         if (options.length !== 4 || options.some((opt) => !opt)) return null;
@@ -277,6 +284,8 @@ const CreateExam: React.FC = () => {
           durationMinutes: duration,
           passPercentage: 40,
           randomizeQuestions,
+          startTime: startTime || null,
+          endTime: endTime || null,
         });
 
         targetExamId = createResponse.data.exam.id;
@@ -396,8 +405,8 @@ const CreateExam: React.FC = () => {
               />
             </div>
 
-            {/* Branch and Year - Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Branch, Year, and Section - Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Branch <span className="text-red-500">*</span>
@@ -433,21 +442,64 @@ const CreateExam: React.FC = () => {
                   ))}
                 </select>
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Section (Optional)
+                </label>
+                <select
+                  value={section}
+                  onChange={(e) => setSection(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+                >
+                  <option value="">Open to All Sections</option>
+                  <option value="A">Section A</option>
+                  <option value="B">Section B</option>
+                  <option value="C">Section C</option>
+                </select>
+              </div>
             </div>
 
             {/* Duration */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Duration (minutes)
-              </label>
-              <input
-                type="number"
-                value={duration}
-                onChange={(e) => setDuration(Number(e.target.value))}
-                min={10}
-                max={180}
-                className="w-full sm:w-48 px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-              />
+            {/* Duration and Scheduling */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Duration (minutes)
+                </label>
+                <input
+                  type="number"
+                  value={duration}
+                  onChange={(e) => setDuration(Number(e.target.value))}
+                  min={10}
+                  max={180}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Scheduled Start Time (Optional)
+                </label>
+                <input
+                  type="datetime-local"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Scheduled End Time (Optional)
+                </label>
+                <input
+                  type="datetime-local"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+                />
+              </div>
             </div>
 
             {/* AI Generation Settings */}

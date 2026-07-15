@@ -7,9 +7,11 @@ import Button from "../../components/common/Button";
 const BRANCH_OPTIONS = ["CSD", "CSE", "AIDS", "IT", "ECE", "EEE"] as const;
 const YEAR_OPTIONS = [1, 2, 3, 4] as const;
 
+const SECTION_OPTIONS = ["A", "B", "C"] as const;
+
 const CompleteProfile: React.FC = () => {
   const navigate = useNavigate();
-  const { user, completeProfile } = useAuth();
+  const { user, completeProfile, logout } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -17,6 +19,7 @@ const CompleteProfile: React.FC = () => {
     registrationNumber: user?.registerNumber || "",
     branch: user?.branch || "",
     year: user?.year ? String(user.year) : "",
+    section: user?.section || "",
   });
 
   const handleChange = (
@@ -40,6 +43,11 @@ const CompleteProfile: React.FC = () => {
       return;
     }
 
+    if (!formData.section) {
+      setError("Please select your section");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -50,6 +58,7 @@ const CompleteProfile: React.FC = () => {
         name: formData.fullName,
         branch: formData.branch,
         year: numericYear,
+        section: formData.section,
         registerNumber: formData.registrationNumber,
       });
 
@@ -57,6 +66,7 @@ const CompleteProfile: React.FC = () => {
         name: updatedUser.name,
         branch: updatedUser.branch ?? formData.branch,
         year: updatedUser.year ?? numericYear,
+        section: updatedUser.section ?? formData.section,
         registerNumber: updatedUser.registerNumber ?? formData.registrationNumber,
       });
       navigate("/student/dashboard");
@@ -156,9 +166,42 @@ const CompleteProfile: React.FC = () => {
             </select>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Section
+            </label>
+            <select
+              name="section"
+              value={formData.section}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2.5 sm:py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base bg-white"
+            >
+              <option value="">Select your section</option>
+              {SECTION_OPTIONS.map((sec) => (
+                <option key={sec} value={sec}>
+                  Section {sec}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <Button type="submit" isLoading={isLoading} fullWidth>
             Complete Profile
           </Button>
+
+          <div className="text-center mt-4">
+            <button
+              type="button"
+              onClick={async () => {
+                await logout();
+                navigate("/login");
+              }}
+              className="text-sm font-medium text-gray-500 hover:text-gray-800 transition-colors"
+            >
+              Sign Out / Cancel
+            </button>
+          </div>
         </form>
       </div>
     </div>

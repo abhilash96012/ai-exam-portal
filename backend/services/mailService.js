@@ -65,12 +65,14 @@ const sendTeacherInvite = async ({ to, name, inviteLink, expiresAt }) => {
   `;
 
   try {
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: config.smtp.from,
       to,
       subject: 'Teacher invitation - Set up your password',
       html,
     });
+    logger.info('Teacher invite sent', { url: nodemailer.getTestMessageUrl(info) });
+    console.log(`\n====================================\n[EMAIL DELIVERED] Preview URL: ${nodemailer.getTestMessageUrl(info)}\n====================================\n`);
   } catch (error) {
     logger.error('Failed to send teacher invite email', {
       to,
@@ -105,12 +107,14 @@ const sendOTPEmail = async ({ to, otp, expiresIn = 10 }) => {
   `;
 
   try {
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: config.smtp.from,
       to,
-      subject: 'Your OTP for Email Verification',
+      subject: 'Email Verification OTP',
       html,
     });
+    logger.info('OTP email sent', { url: nodemailer.getTestMessageUrl(info) });
+    console.log(`\n====================================\n[EMAIL DELIVERED] Preview URL: ${nodemailer.getTestMessageUrl(info)}\n====================================\n`);
   } catch (error) {
     logger.error('Failed to send OTP email', {
       to,

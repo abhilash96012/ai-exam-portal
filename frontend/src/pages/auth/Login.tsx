@@ -154,7 +154,7 @@ const Login: React.FC = () => {
                 Don&apos;t have an account?{" "}
                 <button
                   type="button"
-                  onClick={() => navigate("/register")}
+                  onClick={() => navigate("/register", { state: { role: selectedRole } })}
                   className="text-blue-600 hover:underline font-medium"
                 >
                   Create Account
