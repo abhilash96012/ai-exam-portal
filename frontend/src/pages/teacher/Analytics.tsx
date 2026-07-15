@@ -161,7 +161,7 @@ const Analytics: React.FC = () => {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {data.passFailData.map((entry, index) => (
+                    {data.passFailData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>

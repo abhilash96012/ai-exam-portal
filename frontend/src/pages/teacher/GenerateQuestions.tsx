@@ -56,8 +56,6 @@ const GenerateQuestions: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedQuestions, setGeneratedQuestions] =
     useState<GeneratedQuestionsData | null>(null);
-  const [subjects, setSubjects] = useState<string[]>([]);
-  const [loadingSubjects, setLoadingSubjects] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [generationMode, setGenerationMode] = useState<"prompt" | "file">("prompt");

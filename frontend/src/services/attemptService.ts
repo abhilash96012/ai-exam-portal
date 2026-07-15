@@ -10,7 +10,7 @@ export const startExam = async (examId: string) => {
 // Submit an attempt with all answers
 export const submitAttempt = async (
   attemptId: string,
-  answers: { questionId: string; selectedOption: string }[],
+  answers: { questionId: string; selectedOption?: string; textAnswer?: string }[],
   tabSwitchCount?: number
 ) => {
   const response = await api.post(`/student/attempts/${attemptId}/submit`, {
@@ -24,7 +24,7 @@ export const submitAttempt = async (
 // Save a single answer for an attempt (per-question save)
 export const saveAnswer = async (
   attemptId: string,
-  payload: { questionId: string; selectedOption: string },
+  payload: { questionId: string; selectedOption?: string; textAnswer?: string },
 ) => {
   const response = await api.post(
     `/student/attempts/${attemptId}/answer`,
