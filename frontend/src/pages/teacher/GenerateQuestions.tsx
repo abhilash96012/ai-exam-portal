@@ -73,41 +73,6 @@ const GenerateQuestions: React.FC = () => {
   });
   const [isPublishing, setIsPublishing] = useState(false);
 
-  // Fetch subjects when department and year change
-  useEffect(() => {
-    const fetchSubjects = async () => {
-      if (generateFormState.department && generateFormState.year) {
-        setLoadingSubjects(true);
-        setError(null);
-        try {
-          const response = await api.get("/teacher/subjects", {
-            params: {
-              department: generateFormState.department,
-              year: generateFormState.year,
-            },
-          });
-          const fetchedSubjects = Array.isArray(response.data) ? response.data : (response.data?.data || []);
-          setSubjects(fetchedSubjects);
-          // Reset subject selection when department or year changes
-          setGenerateFormState((prev) => ({
-            ...prev,
-            subject: "",
-          }));
-        } catch (err: any) {
-          setError(
-            err.response?.data?.message ||
-              "Failed to load subjects. Please try again.",
-          );
-          setSubjects([]);
-        } finally {
-          setLoadingSubjects(false);
-        }
-      }
-    };
-
-    fetchSubjects();
-  }, [generateFormState.department, generateFormState.year]);
-
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
