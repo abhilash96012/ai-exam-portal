@@ -93,7 +93,7 @@ public class ExamController {
         String subject = exam.getBranch() != null ? exam.getBranch() : "General";
         String customPrompt = payload.containsKey("customPrompt") ? payload.get("customPrompt").toString() : null;
 
-        int maxChars = 12000;
+        int maxChars = 3000;
         if (syllabusText.length() > maxChars) {
             int startIdx = syllabusText.length() > 30000 ? 10000 : 0;
             if (startIdx + maxChars > syllabusText.length()) {

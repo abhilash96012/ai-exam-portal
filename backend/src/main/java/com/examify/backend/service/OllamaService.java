@@ -73,7 +73,9 @@ public class OllamaService {
 
             Map<String, Object> options = new HashMap<>();
             options.put("temperature", 0.3);
-            options.put("num_predict", -1);
+            options.put("num_predict", Math.min(2048, Math.max(300, count * 350)));
+            options.put("num_ctx", 2048);
+            options.put("num_thread", Math.max(2, Runtime.getRuntime().availableProcessors()));
             requestBody.put("options", options);
 
             HttpHeaders headers = new HttpHeaders();
