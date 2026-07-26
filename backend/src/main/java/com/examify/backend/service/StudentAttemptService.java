@@ -46,7 +46,22 @@ public class StudentAttemptService {
         List<Map<String, Object>> result = new ArrayList<>();
 
         for (Exam e : exams) {
-            // Include all published exams for the student
+            // Smart eligibility matching for branch, year, and section
+            if (e.getBranch() != null && !e.getBranch().trim().isEmpty() &&
+                student.getBranch() != null && !student.getBranch().trim().isEmpty() &&
+                !e.getBranch().equalsIgnoreCase(student.getBranch())) {
+                continue;
+            }
+            if (e.getYear() != null && e.getYear() != 0 &&
+                student.getYear() != null && student.getYear() != 0 &&
+                !e.getYear().equals(student.getYear())) {
+                continue;
+            }
+            if (e.getSection() != null && !e.getSection().trim().isEmpty() &&
+                student.getSection() != null && !student.getSection().trim().isEmpty() &&
+                !e.getSection().equalsIgnoreCase(student.getSection())) {
+                continue;
+            }
 
             int totalQuestions = questionRepository.findByExamId(e.getId()).size();
             List<ExamAttempt> attempts = attemptRepository.findByExamIdAndStudentId(e.getId(), student.getId());
