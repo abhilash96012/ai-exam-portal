@@ -23,8 +23,8 @@ public class OllamaService {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final String OLLAMA_URL = "http://localhost:11434/api/generate";
-    private final String OLLAMA_MODEL = "llama3:latest"; // Or configured from properties
+    private final String OLLAMA_URL = System.getenv("OLLAMA_API_URL") != null ? System.getenv("OLLAMA_API_URL") : "http://localhost:11434/api/generate";
+    private final String OLLAMA_MODEL = System.getenv("OLLAMA_MODEL") != null ? System.getenv("OLLAMA_MODEL") : "llama3:latest";
 
     public List<GeneratedQuestion> generateQuestions(String syllabusContent, int count, String subject, String defaultDifficulty, String questionType, String customPrompt) {
         List<GeneratedQuestion> allQuestions = new ArrayList<>();
