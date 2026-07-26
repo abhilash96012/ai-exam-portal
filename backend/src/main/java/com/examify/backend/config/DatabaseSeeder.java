@@ -82,6 +82,8 @@ public class DatabaseSeeder implements CommandLineRunner {
             student2.setProfileCompleted(true);
             userRepository.save(student2);
             System.out.println("✅ Seeded default Student account: alice@example.com / student123");
+        }
+
         // Seed SASTRA Teacher Account
         userRepository.findByEmail("ganesh@sastra.ac.in").ifPresentOrElse(
             u -> { u.setPassword(passwordEncoder.encode("123456789")); userRepository.save(u); },
