@@ -12,7 +12,9 @@ module.exports = {
     password: process.env.DB_PASSWORD || '1234',
   },
   ollama: {
-    apiUrl: process.env.OLLAMA_API_URL || 'http://localhost:11434/api/generate',
+    apiUrl: (process.env.OLLAMA_API_URL || 'http://localhost:11434/api/generate').endsWith('/api/generate')
+      ? (process.env.OLLAMA_API_URL || 'http://localhost:11434/api/generate')
+      : `${process.env.OLLAMA_API_URL.replace(/\/$/, '')}/api/generate`,
     model: process.env.OLLAMA_MODEL || 'llama3',
   },
   n8n: {

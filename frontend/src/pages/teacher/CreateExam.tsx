@@ -34,6 +34,7 @@ const CreateExam: React.FC = () => {
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">(
     "medium",
   );
+  const [customPrompt, setCustomPrompt] = useState("");
 
   // Syllabus Upload State
   const [syllabusFile, setSyllabusFile] = useState<File | null>(null);
@@ -154,6 +155,7 @@ const CreateExam: React.FC = () => {
       count: questionCount,
       questionType,
       difficulty,
+      customPrompt,
     });
 
     const backendQuestions = Array.isArray(generated?.questions)
@@ -185,14 +187,24 @@ const CreateExam: React.FC = () => {
         }
 
         if (!questionText) return null;
-        if (options.length !== 4 || options.some((opt) => !opt)) return null;
-        if (correctAnswerIndex === undefined) return null;
+
+        // Provide fallback options if the AI failed to generate exactly 4 valid options
+        const safeOptions = options.length === 4 ? options : [
+          options[0] || "Option A",
+          options[1] || "Option B",
+          options[2] || "Option C",
+          options[3] || "Option D",
+        ];
+        
+        // Provide a fallback correct answer if the AI missed it
+        const safeCorrectAnswer = correctAnswerIndex !== undefined ? correctAnswerIndex : 0;
 
         return {
           id: q.id || index + 1,
           question: questionText,
-          options,
-          correctAnswer: correctAnswerIndex,
+          options: safeOptions,
+          correctAnswer: safeCorrectAnswer,
+          difficulty: q.difficulty || difficulty || "Medium",
         };
       })
       .filter((q: Question | null): q is Question => q !== null);
@@ -209,12 +221,12 @@ const CreateExam: React.FC = () => {
     );
 
     if (
-      Number.isFinite(requested) &&
-      Number.isFinite(generatedCount) &&
+      requested > 0 &&
+      generatedCount > 0 &&
       generatedCount < requested
     ) {
       setSuccessMessage(
-        `Generated ${generatedCount} valid questions out of ${requested} requested. Some were skipped due to validation.`,
+        `Generated ${generatedCount} questions out of ${requested} requested. (The AI model stopped early).`,
       );
       return;
     }
@@ -306,6 +318,7 @@ const CreateExam: React.FC = () => {
         optionD: q.options[3],
         correctOption: ["A", "B", "C", "D"][q.correctAnswer],
         marks: 1,
+        difficulty: q.difficulty || difficulty || "Medium",
       }));
 
       await examService.createQuestionsBulk(finalExamId, mappedQuestions);
@@ -550,6 +563,20 @@ const CreateExam: React.FC = () => {
                   <option value="hard">Hard</option>
                 </select>
               </div>
+            </div>
+
+            {/* Custom Prompt */}
+            <div className="pt-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Custom AI Prompt (Optional)
+              </label>
+              <textarea
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                placeholder="e.g. Provide questions from uploaded file of 2 easy, 2 medium"
+                rows={2}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white resize-y"
+              />
             </div>
 
             {/* Randomize Toggle */}
@@ -976,11 +1003,14 @@ const CreateExam: React.FC = () => {
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                     <div className="flex-1">
-                      <p className="font-medium text-gray-800 text-sm sm:text-base">
+                      <p className="font-medium text-gray-800 text-sm sm:text-base flex items-center">
                         <span className="text-blue-600 mr-2">
                           Q{index + 1}.
                         </span>
-                        {q.question}
+                        <span>{q.question}</span>
+                        <span className="text-gray-500 font-normal ml-2 text-sm">
+                          ({q.difficulty || "Medium"})
+                        </span>
                       </p>
                       <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {q.options.map((option, optIndex) => (

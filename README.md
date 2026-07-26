@@ -81,48 +81,61 @@ npm run dev
 
 ---
 
-## ☁️ Deployment Guide (Free Tier)
+---
 
-This project is configured to be easily deployed on free hosting tiers using **Vercel**, **Render**, and **Neon**.
+## 🐳 Docker & GitHub Actions Deployment (Recommended)
 
-### Step 1: Database Deployment (Neon.tech)
-1. Create a free account at [Neon.tech](https://neon.tech/).
-2. Create a new project and select PostgreSQL as the database.
-3. Copy the **Connection String** (it looks like `postgresql://user:password@endpoint.neon.tech/dbname?sslmode=require`).
+This project includes a complete Docker Compose environment that orchestrates **PostgreSQL**, **Backend API**, **Frontend UI (Nginx)**, **Ollama AI Service**, and an **Auto-Pull Helper** that downloads the AI model (`llama3`) automatically.
 
-### Step 2: Backend Deployment (Render.com)
-1. Push this repository to your GitHub account.
-2. Create a free account at [Render.com](https://render.com/).
-3. Click **New +** > **Web Service**.
-4. Connect your GitHub repository.
-5. Configuration:
-   - **Name:** `ai-exam-backend`
-   - **Root Directory:** `backend`
-   - **Build Command:** `npm install`
-   - **Start Command:** `npm start`
-6. Add Environment Variables:
-   - `NODE_ENV`: `production`
-   - `DATABASE_URL`: *(Paste the Neon URL from Step 1)*
-   - `FRONTEND_URL`: *(Leave blank for now, we will update it in Step 3)*
-   - `JWT_SECRET`: *(Generate a secure random string)*
-7. Click **Create Web Service**. Render will automatically build and deploy your backend. Copy the backend URL (e.g., `https://ai-exam-backend.onrender.com`).
+### 🚀 One-Command Deployment with Docker Compose
 
-### Step 3: Frontend Deployment (Vercel)
-1. Create a free account at [Vercel.com](https://vercel.com/).
-2. Click **Add New...** > **Project** and import your GitHub repository.
-3. Configuration:
-   - **Root Directory:** Edit and select `frontend`.
-   - **Framework Preset:** Vite
-4. Add Environment Variables:
-   - `VITE_API_URL`: `https://ai-exam-backend.onrender.com/api` *(Replace with your Render URL from Step 2)*
-5. Click **Deploy**. Vercel will automatically build and deploy your frontend. Copy the live frontend URL.
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/abhilash96012/ai-exam-portal.git
+   cd ai-exam-portal
+   ```
 
-### Step 4: Finalize CORS Configuration
-1. Go back to your **Render** dashboard for the backend.
-2. Update the `FRONTEND_URL` environment variable to your live Vercel URL (e.g., `https://ai-exam-portal.vercel.app`).
-3. Render will automatically restart your backend to apply the changes.
+2. **Start all services (Frontend, Backend, Postgres, Ollama):**
+   ```bash
+   docker compose up -d
+   ```
 
-*(Note: GitHub Actions are not strictly required because Vercel and Render both feature automatic native integration. Any pushes to your `main` branch will automatically trigger deployments on both platforms.)*
+   *The `ollama-init` service will automatically detect and pull the `llama3` model into Ollama on startup.*
+
+3. **Access the application:**
+   - **Frontend App:** [http://localhost](http://localhost)
+   - **Backend API:** [http://localhost:5000/api](http://localhost:5000/api)
+   - **Ollama AI Endpoint:** [http://localhost:11434](http://localhost:11434)
+
+---
+
+## ⚡ GitHub CI/CD & Container Registry (GHCR)
+
+Every push to the `main` or `master` branch triggers the GitHub Actions workflow (`.github/workflows/deploy.yml`), which:
+1. Validates and builds the Frontend React & Backend Express code.
+2. Packages production Docker images.
+3. Automatically publishes tagged images to **GitHub Container Registry (GHCR)**:
+   - `ghcr.io/<your-github-username>/ai-exam-portal-frontend:latest`
+   - `ghcr.io/<your-github-username>/ai-exam-portal-backend:latest`
+
+---
+
+## ☁️ Cloud Deployment Options (Vercel / Render / Neon)
+
+For serverless/cloud hosting (free tier):
+
+### 1. Database Setup (Neon.tech)
+- Create a PostgreSQL database on [Neon.tech](https://neon.tech/) and copy the `DATABASE_URL`.
+
+### 2. Backend Deployment (Render.com)
+- Connect repository to [Render.com](https://render.com/).
+- Set root directory to `backend`, build command `npm install`, start command `npm start`.
+- Environment Variables: `NODE_ENV=production`, `DATABASE_URL=<Neon_URL>`, `JWT_SECRET=<Secret>`, `OLLAMA_API_URL=<Your_Ollama_Endpoint_or_Cloud_LLM>`.
+
+### 3. Frontend Deployment (Vercel)
+- Connect repository to [Vercel.com](https://vercel.com/).
+- Set root directory to `frontend`, framework preset `Vite`.
+- Environment Variable: `VITE_API_URL=https://<your-render-backend>.onrender.com/api`.
 
 ---
 
@@ -131,3 +144,4 @@ Contributions, issues, and feature requests are welcome! Feel free to check the 
 
 ## 📝 License
 This project is [MIT](https://choosealicense.com/licenses/mit/) licensed.
+

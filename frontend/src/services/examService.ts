@@ -88,7 +88,12 @@ export const uploadSyllabus = async (
   return response.data.data;
 };
 
-export const generateQuestions = async (examId: string, payload?: any) => {
+export const generateQuestions = async (examId: string, payload: {
+  count?: number;
+  questionType?: string;
+  difficulty?: string;
+  customPrompt?: string;
+}) => {
   const response = await api.post(
     `/exams/${examId}/generate-questions`,
     payload || {}

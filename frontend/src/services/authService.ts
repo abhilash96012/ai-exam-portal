@@ -90,7 +90,7 @@ const completeStudentProfile = async (payload: {
   registerNumber: string;
 }): Promise<AuthUser> => {
   const response = await api.put("/auth/complete-profile", payload);
-  return response.data.data.user as AuthUser;
+  return response.data.data as AuthUser;
 };
 
 const logout = async () => {

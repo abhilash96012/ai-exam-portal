@@ -12,7 +12,6 @@ import EditExam from "../pages/teacher/EditExam";
 import ReviewQuestions from "../pages/teacher/ReviewQuestions";
 import TeacherResults from "../pages/teacher/TeacherResults";
 import TeacherSetupPassword from "../pages/teacher/TeacherSetupPassword";
-import GenerateQuestions from "../pages/teacher/GenerateQuestions";
 import ExamAnalytics from "../pages/teacher/ExamAnalytics";
 import TeacherAnalytics from "../pages/teacher/Analytics";
 
@@ -111,10 +110,6 @@ const AppRoutes = () => {
             <Route
               path="/teacher/results/:examId"
               element={<TeacherResults />}
-            />
-            <Route
-              path="/teacher/generate-questions"
-              element={<GenerateQuestions />}
             />
           </Route>
 

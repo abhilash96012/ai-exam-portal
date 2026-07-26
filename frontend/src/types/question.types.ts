@@ -6,4 +6,5 @@ export interface Question {
   correctAnswerIndex: number;
   questionType?: string;
   modelAnswer?: string;
+  difficulty?: string;
 }

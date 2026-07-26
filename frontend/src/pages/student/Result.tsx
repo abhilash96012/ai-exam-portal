@@ -48,7 +48,7 @@ const Result: React.FC = () => {
           status: r.passed ? "PASS" : "FAIL",
           timeTaken: undefined,
         });
-        setQuestions(data.questions || []);
+        setQuestions(data.answers || []);
       } catch (error) {
         console.error("Failed to fetch result details:", error);
       } finally {

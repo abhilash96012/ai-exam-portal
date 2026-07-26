@@ -1,0 +1,25 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: examify-backend
+  datasource:
+    # Defaulting to SQLite for local development to match the current setup
+    url: jdbc:sqlite:../backend/database.sqlite
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: update # Automatically update schema based on entities
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+app:
+  jwt:
+    secret: "your_super_secret_jwt_key_that_should_be_at_least_256_bits_long_for_security_examify_ai"
+    expiration: 86400000 # 24 hours in milliseconds
+  n8n:
+    webhook-url: "http://localhost:5678/webhook/upload-syllabus" # Adjust if different
