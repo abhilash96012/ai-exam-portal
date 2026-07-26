@@ -82,6 +82,34 @@ public class DatabaseSeeder implements CommandLineRunner {
             student2.setProfileCompleted(true);
             userRepository.save(student2);
             System.out.println("✅ Seeded default Student account: alice@example.com / student123");
-        }
+        // Seed SASTRA Teacher Account
+        userRepository.findByEmail("ganesh@sastra.ac.in").ifPresentOrElse(
+            u -> { u.setPassword(passwordEncoder.encode("123456789")); userRepository.save(u); },
+            () -> {
+                User u = new User(); u.setName("Ganesh J"); u.setEmail("ganesh@sastra.ac.in");
+                u.setPassword(passwordEncoder.encode("123456789")); u.setRole("TEACHER"); u.setIsActive(true); u.setProfileCompleted(true);
+                userRepository.save(u);
+            }
+        );
+
+        // Seed SASTRA Student Account
+        userRepository.findByEmail("227003031@sastra.ac.in").ifPresentOrElse(
+            u -> { u.setPassword(passwordEncoder.encode("student123")); userRepository.save(u); },
+            () -> {
+                User u = new User(); u.setName("Boganadham Jaya Abhilash"); u.setEmail("227003031@sastra.ac.in");
+                u.setPassword(passwordEncoder.encode("student123")); u.setRole("STUDENT"); u.setIsActive(true); u.setProfileCompleted(true);
+                userRepository.save(u);
+            }
+        );
+
+        // Seed SASTRA Admin Account
+        userRepository.findByEmail("admin@sastra.ac.in").ifPresentOrElse(
+            u -> { u.setPassword(passwordEncoder.encode("admin123")); userRepository.save(u); },
+            () -> {
+                User u = new User(); u.setName("Sastra Admin"); u.setEmail("admin@sastra.ac.in");
+                u.setPassword(passwordEncoder.encode("admin123")); u.setRole("ADMIN"); u.setIsActive(true); u.setProfileCompleted(true);
+                userRepository.save(u);
+            }
+        );
     }
 }
