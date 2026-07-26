@@ -106,10 +106,8 @@ const StudentOTPVerification: React.FC = () => {
       return;
     }
 
-    if (!formState.collegeId) {
-      setError("Please select your college");
-      return;
-    }
+    // Set default college if not selected
+    const selectedCollegeId = formState.collegeId ? Number(formState.collegeId) : 1;
 
     if (!formState.password || formState.password.length < 6) {
       setError("Password must be at least 6 characters");
@@ -132,7 +130,7 @@ const StudentOTPVerification: React.FC = () => {
         formState.password,
         formState.confirmPassword,
         formState.name,
-        formState.collegeId ? Number(formState.collegeId) : null
+        selectedCollegeId
       );
 
       if (response.data) {

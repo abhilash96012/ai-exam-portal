@@ -12,10 +12,19 @@ import org.springframework.stereotype.Component;
 public class DatabaseSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;
+    private final com.examify.backend.repository.CollegeRepository collegeRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
+        // Seed Default College
+        if (collegeRepository.count() == 0) {
+            com.examify.backend.entity.College college = new com.examify.backend.entity.College();
+            college.setName("Main University Campus");
+            college.setDomain("university.edu");
+            collegeRepository.save(college);
+            System.out.println("✅ Seeded default College: Main University Campus");
+        }
         // Seed Teacher Account
         if (userRepository.findByEmail("mahadev1@gmail.com").isEmpty()) {
             User teacher = new User();
