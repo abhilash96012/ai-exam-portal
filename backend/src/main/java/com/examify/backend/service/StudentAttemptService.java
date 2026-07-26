@@ -41,16 +41,12 @@ public class StudentAttemptService {
 
     public List<Map<String, Object>> getAvailableExams(String email) {
         User student = userRepository.findByEmail(email).orElseThrow();
-        Long collegeId = student.getCollege() != null ? student.getCollege().getId() : 1L;
 
-        List<Exam> exams = examRepository.findByCollegeIdAndIsPublishedTrue(collegeId);
+        List<Exam> exams = examRepository.findByIsPublishedTrue();
         List<Map<String, Object>> result = new ArrayList<>();
 
         for (Exam e : exams) {
-            // Check eligibility based on branch, year, section
-            if (e.getBranch() != null && !e.getBranch().isEmpty() && !e.getBranch().equals(student.getBranch())) continue;
-            if (e.getYear() != null && e.getYear() != 0 && !e.getYear().equals(student.getYear())) continue;
-            if (e.getSection() != null && !e.getSection().isEmpty() && !e.getSection().equals(student.getSection())) continue;
+            // Include all published exams for the student
 
             int totalQuestions = questionRepository.findByExamId(e.getId()).size();
             List<ExamAttempt> attempts = attemptRepository.findByExamIdAndStudentId(e.getId(), student.getId());
