@@ -38,8 +38,8 @@ api.interceptors.response.use(
     const status = error?.response?.status;
     const backendMessage = error?.response?.data?.message;
 
-    // If auth is missing/invalid, clear tokens and redirect to login
-    if (status === 401) {
+    // If auth is missing/invalid or session expired, clear tokens and redirect to login
+    if (status === 401 || status === 403) {
       try {
         localStorage.removeItem(AUTH_STORAGE_KEY);
         localStorage.removeItem("authToken");
