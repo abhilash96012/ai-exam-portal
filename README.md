@@ -26,10 +26,10 @@ A comprehensive, AI-powered online examination portal designed to streamline the
 ## 🛠 Tech Stack
 
 - **Frontend:** React, TypeScript, Vite, Tailwind CSS, Lucide Icons, Recharts
-- **Backend:** Node.js, Express.js, Axios, Bcrypt, JsonWebToken (JWT)
-- **Database:** PostgreSQL (Production) / SQLite (Local Development)
-- **AI/LLM:** Ollama (LLaMA 3) running locally or via cloud
-- **Deployment:** Vercel (Frontend), Render (Backend), Neon (Database)
+- **Backend:** Java 17, Spring Boot 3, Spring Security, Spring Data JPA, Hibernate, JWT
+- **Database:** PostgreSQL (Production) / SQLite3 (Local Development)
+- **AI/LLM Engine:** Ollama (LLaMA 3)
+- **Deployment & DevOps:** Docker Compose, Nginx, GitHub Actions CI/CD (GHCR)
 
 ---
 
