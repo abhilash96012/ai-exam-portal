@@ -5,6 +5,7 @@ const AUTH_STORAGE_KEY = "authUserState";
 // Central axios instance for the app
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  timeout: 600000, // 10 minutes timeout for AI generation tasks
   headers: {
     "Content-Type": "application/json",
   },
