@@ -42,20 +42,36 @@ public class DatabaseSeeder implements CommandLineRunner {
             System.out.println("✅ Seeded default Admin account: admin@gmail.com / admin123");
         }
 
-        // Seed Student Account
+        // Seed Student Account (alice@gmail.com and alice@example.com)
+        if (userRepository.findByEmail("alice@gmail.com").isEmpty()) {
+            User student1 = new User();
+            student1.setName("Alice Student");
+            student1.setEmail("alice@gmail.com");
+            student1.setPassword(passwordEncoder.encode("student123"));
+            student1.setRole("STUDENT");
+            student1.setRegisterNumber("REG2024001");
+            student1.setBranch("CSE");
+            student1.setYear(3);
+            student1.setSection("A");
+            student1.setIsActive(true);
+            student1.setProfileCompleted(true);
+            userRepository.save(student1);
+            System.out.println("✅ Seeded default Student account: alice@gmail.com / student123");
+        }
+
         if (userRepository.findByEmail("alice@example.com").isEmpty()) {
-            User student = new User();
-            student.setName("Alice Student");
-            student.setEmail("alice@example.com");
-            student.setPassword(passwordEncoder.encode("student123"));
-            student.setRole("STUDENT");
-            student.setRegisterNumber("REG2024001");
-            student.setBranch("CSE");
-            student.setYear(3);
-            student.setSection("A");
-            student.setIsActive(true);
-            student.setProfileCompleted(true);
-            userRepository.save(student);
+            User student2 = new User();
+            student2.setName("Alice Student");
+            student2.setEmail("alice@example.com");
+            student2.setPassword(passwordEncoder.encode("student123"));
+            student2.setRole("STUDENT");
+            student2.setRegisterNumber("REG2024002");
+            student2.setBranch("CSE");
+            student2.setYear(3);
+            student2.setSection("A");
+            student2.setIsActive(true);
+            student2.setProfileCompleted(true);
+            userRepository.save(student2);
             System.out.println("✅ Seeded default Student account: alice@example.com / student123");
         }
     }
