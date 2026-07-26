@@ -5,7 +5,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Install build dependencies for native modules if needed (e.g. sqlite3 or bcrypt)
-RUN apk add --no-co-cache python3 make g++
+RUN apk add --no-cache python3 make g++
 
 # Copy package files
 COPY package*.json ./
