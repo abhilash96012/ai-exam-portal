@@ -61,7 +61,7 @@ services:
   # ===============================================
   backend:
     build:
-      context: ./backend-spring
+      context: ./backend
       dockerfile: Dockerfile
     container_name: exam_backend
     restart: always
