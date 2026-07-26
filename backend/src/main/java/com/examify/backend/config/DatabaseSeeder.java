@@ -1,6 +1,8 @@
 package com.examify.backend.config;
 
+import com.examify.backend.entity.College;
 import com.examify.backend.entity.User;
+import com.examify.backend.repository.CollegeRepository;
 import com.examify.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -12,106 +14,45 @@ import org.springframework.stereotype.Component;
 public class DatabaseSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;
-    private final com.examify.backend.repository.CollegeRepository collegeRepository;
+    private final CollegeRepository collegeRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
-        // Seed Default College
+        // Ensure default college exists
+        College defaultCollege;
         if (collegeRepository.count() == 0) {
-            com.examify.backend.entity.College college = new com.examify.backend.entity.College();
-            college.setName("Main University Campus");
-            college.setDomain("university.edu");
-            collegeRepository.save(college);
-            System.out.println("✅ Seeded default College: Main University Campus");
-        }
-        // Seed Teacher Account
-        if (userRepository.findByEmail("mahadev1@gmail.com").isEmpty()) {
-            User teacher = new User();
-            teacher.setName("Mahadev Teacher");
-            teacher.setEmail("mahadev1@gmail.com");
-            teacher.setPassword(passwordEncoder.encode("123456789"));
-            teacher.setRole("TEACHER");
-            teacher.setIsActive(true);
-            teacher.setProfileCompleted(true);
-            userRepository.save(teacher);
-            System.out.println("✅ Seeded default Teacher account: mahadev1@gmail.com / 123456789");
+            defaultCollege = new College();
+            defaultCollege.setName("SASTRA Deemed University");
+            defaultCollege.setDomain("sastra.ac.in");
+            defaultCollege = collegeRepository.save(defaultCollege);
+        } else {
+            defaultCollege = collegeRepository.findAll().get(0);
         }
 
-        // Seed Admin Account
-        if (userRepository.findByEmail("admin@gmail.com").isEmpty()) {
-            User admin = new User();
-            admin.setName("Admin User");
-            admin.setEmail("admin@gmail.com");
-            admin.setPassword(passwordEncoder.encode("admin123"));
-            admin.setRole("ADMIN");
-            admin.setIsActive(true);
-            admin.setProfileCompleted(true);
-            userRepository.save(admin);
-            System.out.println("✅ Seeded default Admin account: admin@gmail.com / admin123");
-        }
+        // 1. Teacher Accounts (Password: 123456789)
+        seedOrUpdateUser("mahadev1@gmail.com", "Mahadev Teacher", "123456789", "TEACHER", defaultCollege);
+        seedOrUpdateUser("ganesh@sastra.ac.in", "Ganesh J", "123456789", "TEACHER", defaultCollege);
 
-        // Seed Student Account (alice@gmail.com and alice@example.com)
-        if (userRepository.findByEmail("alice@gmail.com").isEmpty()) {
-            User student1 = new User();
-            student1.setName("Alice Student");
-            student1.setEmail("alice@gmail.com");
-            student1.setPassword(passwordEncoder.encode("student123"));
-            student1.setRole("STUDENT");
-            student1.setRegisterNumber("REG2024001");
-            student1.setBranch("CSE");
-            student1.setYear(3);
-            student1.setSection("A");
-            student1.setIsActive(true);
-            student1.setProfileCompleted(true);
-            userRepository.save(student1);
-            System.out.println("✅ Seeded default Student account: alice@gmail.com / student123");
-        }
+        // 2. Student Accounts (Password: student123)
+        seedOrUpdateUser("alice@gmail.com", "Alice Student", "student123", "STUDENT", defaultCollege);
+        seedOrUpdateUser("227003031@sastra.ac.in", "Boganadham Jaya Abhilash", "student123", "STUDENT", defaultCollege);
 
-        if (userRepository.findByEmail("alice@example.com").isEmpty()) {
-            User student2 = new User();
-            student2.setName("Alice Student");
-            student2.setEmail("alice@example.com");
-            student2.setPassword(passwordEncoder.encode("student123"));
-            student2.setRole("STUDENT");
-            student2.setRegisterNumber("REG2024002");
-            student2.setBranch("CSE");
-            student2.setYear(3);
-            student2.setSection("A");
-            student2.setIsActive(true);
-            student2.setProfileCompleted(true);
-            userRepository.save(student2);
-            System.out.println("✅ Seeded default Student account: alice@example.com / student123");
-        }
+        // 3. Admin Accounts (Password: admin123)
+        seedOrUpdateUser("admin@gmail.com", "Admin User", "admin123", "ADMIN", defaultCollege);
+        seedOrUpdateUser("admin@sastra.ac.in", "Sastra Admin", "admin123", "ADMIN", defaultCollege);
+    }
 
-        // Seed SASTRA Teacher Account
-        userRepository.findByEmail("ganesh@sastra.ac.in").ifPresentOrElse(
-            u -> { u.setPassword(passwordEncoder.encode("123456789")); userRepository.save(u); },
-            () -> {
-                User u = new User(); u.setName("Ganesh J"); u.setEmail("ganesh@sastra.ac.in");
-                u.setPassword(passwordEncoder.encode("123456789")); u.setRole("TEACHER"); u.setIsActive(true); u.setProfileCompleted(true);
-                userRepository.save(u);
-            }
-        );
-
-        // Seed SASTRA Student Account
-        userRepository.findByEmail("227003031@sastra.ac.in").ifPresentOrElse(
-            u -> { u.setPassword(passwordEncoder.encode("student123")); userRepository.save(u); },
-            () -> {
-                User u = new User(); u.setName("Boganadham Jaya Abhilash"); u.setEmail("227003031@sastra.ac.in");
-                u.setPassword(passwordEncoder.encode("student123")); u.setRole("STUDENT"); u.setIsActive(true); u.setProfileCompleted(true);
-                userRepository.save(u);
-            }
-        );
-
-        // Seed SASTRA Admin Account
-        userRepository.findByEmail("admin@sastra.ac.in").ifPresentOrElse(
-            u -> { u.setPassword(passwordEncoder.encode("admin123")); userRepository.save(u); },
-            () -> {
-                User u = new User(); u.setName("Sastra Admin"); u.setEmail("admin@sastra.ac.in");
-                u.setPassword(passwordEncoder.encode("admin123")); u.setRole("ADMIN"); u.setIsActive(true); u.setProfileCompleted(true);
-                userRepository.save(u);
-            }
-        );
+    private void seedOrUpdateUser(String email, String name, String rawPassword, String role, College college) {
+        User user = userRepository.findByEmail(email).orElse(new User());
+        user.setEmail(email);
+        user.setName(name);
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        user.setRole(role);
+        user.setCollege(college);
+        user.setIsActive(true);
+        user.setProfileCompleted(true);
+        userRepository.save(user);
+        System.out.println("✅ Database Account Ready: " + email + " | Role: " + role + " | Password: " + rawPassword);
     }
 }
