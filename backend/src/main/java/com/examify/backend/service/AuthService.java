@@ -101,7 +101,8 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole() != null ? request.getRole().toUpperCase() : "STUDENT");
         user.setCollege(college);
-        user.setProfileCompleted(true);
+        boolean isStudent = "STUDENT".equalsIgnoreCase(user.getRole());
+        user.setProfileCompleted(!isStudent);
         user.setIsActive(true);
 
         User savedUser = userRepository.save(user);

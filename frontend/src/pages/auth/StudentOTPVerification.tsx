@@ -152,10 +152,14 @@ const StudentOTPVerification: React.FC = () => {
 
         setSuccessMessage("Account created successfully! Redirecting...");
 
-        // Redirect to dashboard
+        // Redirect to complete profile if not completed, else dashboard
         setTimeout(() => {
-          navigate("/student/dashboard", { replace: true });
-        }, 1500);
+          if (response.data.user.profileCompleted) {
+            navigate("/student/dashboard", { replace: true });
+          } else {
+            navigate("/student/complete-profile", { replace: true });
+          }
+        }, 1200);
       }
     } catch (err: any) {
       setError(err.message || "Failed to verify OTP. Please try again.");
