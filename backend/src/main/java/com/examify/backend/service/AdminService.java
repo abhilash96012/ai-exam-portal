@@ -61,10 +61,6 @@ public class AdminService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "College not found"));
 
         String email = request.getEmail();
-        String studentDomain = email.substring(email.indexOf("@") + 1);
-        if (!studentDomain.equalsIgnoreCase(college.getDomain())) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Student email domain must match the college domain: @" + college.getDomain());
-        }
 
         if (userRepository.findByEmail(email).isPresent()) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Email address already registered");
