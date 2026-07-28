@@ -115,6 +115,7 @@ const AppRoutes = () => {
 
           {/* Admin Routes */}
           <Route element={<RoleRoute allowedRole="ADMIN" />}>
+            <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/syllabus" element={<AdminDashboard />} />
             <Route path="/admin/students" element={<StudentManagement />} />
