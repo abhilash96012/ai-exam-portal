@@ -626,21 +626,48 @@ const AdminDashboard: React.FC = () => {
           <div className="flex flex-wrap gap-2 mb-4">
             <button
               type="button"
-              className="rounded-lg bg-indigo-100 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-200 transition-colors"
+              onClick={() => {
+                const name = window.prompt("Enter new Branch name (e.g., Artificial Intelligence & Data Science):");
+                if (name && name.trim()) {
+                  setSyllabusOptions(prev => ({
+                    ...prev,
+                    branches: Array.from(new Set([...prev.branches, name.trim()]))
+                  }));
+                }
+              }}
+              className="rounded-lg bg-indigo-100 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-200 transition-colors cursor-pointer"
             >
-              Add Branch
+              + Add Branch
             </button>
             <button
               type="button"
-              className="rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-200 transition-colors"
+              onClick={() => {
+                const name = window.prompt("Enter new Department name (e.g., School of Computing):");
+                if (name && name.trim()) {
+                  setSyllabusOptions(prev => ({
+                    ...prev,
+                    departments: Array.from(new Set([...prev.departments, name.trim()]))
+                  }));
+                }
+              }}
+              className="rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-200 transition-colors cursor-pointer"
             >
-              Add Department
+              + Add Department
             </button>
             <button
               type="button"
-              className="rounded-lg bg-cyan-100 px-3 py-1.5 text-xs font-semibold text-cyan-700 hover:bg-cyan-200 transition-colors"
+              onClick={() => {
+                const name = window.prompt("Enter new Subject name (e.g., Machine Learning):");
+                if (name && name.trim()) {
+                  setSyllabusOptions(prev => ({
+                    ...prev,
+                    subjects: Array.from(new Set([...prev.subjects, name.trim()]))
+                  }));
+                }
+              }}
+              className="rounded-lg bg-cyan-100 px-3 py-1.5 text-xs font-semibold text-cyan-700 hover:bg-cyan-200 transition-colors cursor-pointer"
             >
-              Add Subject
+              + Add Subject
             </button>
           </div>
           <div className="grid grid-cols-2 gap-2">
