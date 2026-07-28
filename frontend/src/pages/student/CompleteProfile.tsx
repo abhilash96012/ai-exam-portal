@@ -4,10 +4,16 @@ import { useAuth } from "../../context/AuthContext";
 import authService from "../../services/authService";
 import Button from "../../components/common/Button";
 
-const BRANCH_OPTIONS = ["CSD", "CSE", "AIDS", "IT", "ECE", "EEE"] as const;
+const BRANCH_OPTIONS = ["CSD", "CSE", "AIDS", "IT", "ECE", "EEE", "Mechanical", "Civil"] as const;
+const DEPARTMENT_OPTIONS = [
+  "School of Computing",
+  "School of Electrical & Electronics",
+  "School of Mechanical Engineering",
+  "School of Civil Engineering",
+  "School of Chemical & Biotechnology",
+] as const;
 const YEAR_OPTIONS = [1, 2, 3, 4] as const;
-
-const SECTION_OPTIONS = ["A", "B", "C"] as const;
+const SECTION_OPTIONS = ["A", "B", "C", "D"] as const;
 
 const CompleteProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -18,6 +24,7 @@ const CompleteProfile: React.FC = () => {
     fullName: user?.name || "",
     registrationNumber: user?.registerNumber || "",
     branch: user?.branch || "",
+    department: (user as any)?.department || "",
     year: user?.year ? String(user.year) : "",
     section: user?.section || "",
   });
@@ -141,6 +148,26 @@ const CompleteProfile: React.FC = () => {
               {BRANCH_OPTIONS.map((branch) => (
                 <option key={branch} value={branch}>
                   {branch}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Department / School
+            </label>
+            <select
+              name="department"
+              value={formData.department}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2.5 sm:py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base bg-white"
+            >
+              <option value="">Select your department</option>
+              {DEPARTMENT_OPTIONS.map((dept) => (
+                <option key={dept} value={dept}>
+                  {dept}
                 </option>
               ))}
             </select>
