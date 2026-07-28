@@ -66,7 +66,14 @@ public class AdminController {
 
     @GetMapping("/syllabus")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getSyllabusLibrary() {
-        return ResponseEntity.ok(ApiResponse.success("Syllabus library loaded", Map.of("items", List.of(), "total", 0)));
+        Map<String, Object> overview = Map.of(
+            "total_uploaded_syllabi", 0,
+            "total_branches", 6,
+            "total_departments", 6,
+            "total_subjects", 12,
+            "statusCounts", Map.of("UPLOADED", 0, "PROCESSING", 0, "READY", 0)
+        );
+        return ResponseEntity.ok(ApiResponse.success("Syllabus library loaded", Map.of("syllabi", List.of(), "overview", overview)));
     }
 
     @PostMapping(value = {"/syllabus", "/syllabus/upload"}, consumes = {"multipart/form-data"})
