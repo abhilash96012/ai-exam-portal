@@ -54,6 +54,7 @@ public class AuthService {
                     college = collegeRepository.findById(cId).orElse(null);
                 } catch (NumberFormatException e) {
                     // Ignore, college will be null
+                }
             }
         }
         if (college == null) {
