@@ -61,12 +61,22 @@ public class AuthService {
             String domain = request.getEmail() != null && request.getEmail().contains("@") 
                 ? request.getEmail().substring(request.getEmail().indexOf("@") + 1).toLowerCase() 
                 : "";
-            if (!domain.isEmpty() && !"gmail.com".equals(domain)) {
+            if (!domain.isEmpty()) {
                 college = collegeRepository.findByDomain(domain).orElse(null);
             }
         }
         if (college == null) {
             college = collegeRepository.findById(1L).orElse(null);
+        }
+
+        // Strict domain enforcement: student email domain must match college domain if college domain is set
+        if (college != null && college.getDomain() != null && !college.getDomain().trim().isEmpty()) {
+            String studentDomain = request.getEmail() != null && request.getEmail().contains("@")
+                ? request.getEmail().substring(request.getEmail().indexOf("@") + 1).toLowerCase()
+                : "";
+            if (!studentDomain.equalsIgnoreCase(college.getDomain().toLowerCase())) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "Email domain (@" + studentDomain + ") does not match college domain: @" + college.getDomain());
+            }
         }
 
         User user = new User();
