@@ -109,6 +109,19 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success("Analytics loaded", stats));
     }
 
+    @PutMapping("/students/{studentId}")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> updateStudent(
+            @PathVariable String studentId,
+            @RequestBody Map<String, Object> payload) {
+        Map<String, Object> student = Map.of("id", studentId, "name", payload.getOrDefault("name", "Student"), "email", payload.getOrDefault("email", ""));
+        return ResponseEntity.ok(ApiResponse.success("Student updated successfully", Map.of("student", student)));
+    }
+
+    @DeleteMapping("/students/{studentId}")
+    public ResponseEntity<ApiResponse<Void>> deleteStudent(@PathVariable String studentId) {
+        return ResponseEntity.ok(ApiResponse.success("Student deleted successfully"));
+    }
+
     @GetMapping("/teachers")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getTeachers() {
         return ResponseEntity.ok(ApiResponse.success("Teachers loaded", Map.of("invitations", List.of())));
@@ -118,5 +131,48 @@ public class AdminController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> inviteTeacher(@RequestBody Map<String, String> body) {
         Map<String, Object> inv = Map.of("id", "1", "email", body.getOrDefault("email", ""), "status", "SENT");
         return ResponseEntity.ok(ApiResponse.success("Teacher invited", Map.of("invitation", inv, "inviteLink", "http://localhost/invite/1", "emailDelivered", true)));
+    }
+
+    @GetMapping("/teachers/invite-details")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getTeacherInviteDetails(@RequestParam("token") String token) {
+        Map<String, Object> details = Map.of("name", "Invited Teacher", "email", "teacher@example.com", "expiresAt", "2026-12-31T23:59:59Z");
+        return ResponseEntity.ok(ApiResponse.success("Invite details retrieved", details));
+    }
+
+    @PostMapping("/teachers/complete-invite")
+    public ResponseEntity<ApiResponse<Void>> completeTeacherInvite(@RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(ApiResponse.success("Teacher registration completed successfully"));
+    }
+
+    @PatchMapping("/syllabus/{syllabusId}/status")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> updateSyllabusStatus(
+            @PathVariable String syllabusId,
+            @RequestBody Map<String, String> body) {
+        Map<String, Object> item = Map.of("id", syllabusId, "status", body.getOrDefault("status", "APPROVED"));
+        return ResponseEntity.ok(ApiResponse.success("Syllabus status updated", Map.of("syllabus", item)));
+    }
+
+    @DeleteMapping("/syllabus/{syllabusId}")
+    public ResponseEntity<ApiResponse<Void>> deleteSyllabus(@PathVariable String syllabusId) {
+        return ResponseEntity.ok(ApiResponse.success("Syllabus deleted successfully"));
+    }
+
+    @GetMapping("/syllabus/{syllabusId}/download")
+    public ResponseEntity<byte[]> downloadSyllabus(@PathVariable String syllabusId) {
+        byte[] sampleData = "Sample Syllabus Document Content".getBytes();
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"syllabus.pdf\"")
+                .body(sampleData);
+    }
+
+    @GetMapping("/settings/system")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getSystemSettings() {
+        Map<String, Object> settings = Map.of("allowRegistration", true, "maxUploadSizeMb", 50, "aiModel", "llama3");
+        return ResponseEntity.ok(ApiResponse.success("System settings loaded", Map.of("settings", settings)));
+    }
+
+    @PutMapping("/settings/system")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> updateSystemSettings(@RequestBody Map<String, Object> payload) {
+        return ResponseEntity.ok(ApiResponse.success("System settings updated", Map.of("settings", payload)));
     }
 }
