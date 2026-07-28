@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CollegeRepository extends JpaRepository<College, Long> {
+    java.util.Optional<College> findByDomain(String domain);
 }

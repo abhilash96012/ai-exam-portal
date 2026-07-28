@@ -56,6 +56,16 @@ public class AuthService {
                     // Ignore, college will be null
                 }
             }
+        if (college == null) {
+            String domain = request.getEmail() != null && request.getEmail().contains("@") 
+                ? request.getEmail().substring(request.getEmail().indexOf("@") + 1).toLowerCase() 
+                : "";
+            if (!domain.isEmpty() && !"gmail.com".equals(domain)) {
+                college = collegeRepository.findByDomain(domain).orElse(null);
+            }
+        }
+        if (college == null) {
+            college = collegeRepository.findById(1L).orElse(null);
         }
 
         User user = new User();
