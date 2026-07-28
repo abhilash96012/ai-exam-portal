@@ -61,6 +61,12 @@ public class AdminService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "College not found"));
 
         String email = request.getEmail();
+        if (college != null && college.getDomain() != null && !college.getDomain().trim().isEmpty()) {
+            String studentDomain = email.contains("@") ? email.substring(email.indexOf("@") + 1) : "";
+            if (!studentDomain.equalsIgnoreCase(college.getDomain())) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "Student email domain must match college domain: @" + college.getDomain());
+            }
+        }
 
         if (userRepository.findByEmail(email).isPresent()) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Email address already registered");
@@ -111,8 +117,10 @@ public class AdminService {
                 if (email == null || name == null || email.isEmpty()) continue;
 
                 String studentDomain = email.contains("@") ? email.substring(email.indexOf("@") + 1) : "";
-                if (!studentDomain.equalsIgnoreCase("gmail.com") && college != null && college.getDomain() != null && !studentDomain.equalsIgnoreCase(college.getDomain())) {
-                    // Allow gmail.com as well as matching college domain
+                if (college != null && college.getDomain() != null && !college.getDomain().trim().isEmpty()) {
+                    if (!studentDomain.equalsIgnoreCase(college.getDomain())) {
+                        continue; // Skip emails that do not match the college domain
+                    }
                 }
 
                 String reg = getCsvValue(record, headerMap, "register_number", "registration_number", "roll_no");
