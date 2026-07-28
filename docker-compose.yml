@@ -76,6 +76,7 @@ services:
       - ollama
     volumes:
       - backend_uploads:/app/uploads
+      - ./backend/examify.db:/app/examify.db
 
   # ===============================================
   # 5. Frontend React SPA Service (Nginx)

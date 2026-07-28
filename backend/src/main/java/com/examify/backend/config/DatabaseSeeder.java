@@ -41,6 +41,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         // 2. Official SASTRA Student Accounts (Password: student123)
         seedOrUpdateStudent("alice@sastra.ac.in", "Alice Student", "student123", "REG2024001", "Computer Science Engineering", "School of Computing", defaultCollege);
         seedOrUpdateStudent("227003031@sastra.ac.in", "Boganadham Jaya Abhilash", "student123", "227003031", "Computer Science Engineering", "School of Computing", defaultCollege);
+        seedOrUpdateStudent("227003183@sastra.ac.in", "SASTRA Student 227003183", "student123", "227003183", "Computer Science Engineering", "School of Computing", defaultCollege);
 
         // 3. Admin Accounts (Password: admin123)
         seedOrUpdateUser("admin@gmail.com", "Admin User", "admin123", "ADMIN", defaultCollege);
