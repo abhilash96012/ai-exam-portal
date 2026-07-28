@@ -54,8 +54,8 @@ public class AuthService {
                     college = collegeRepository.findById(cId).orElse(null);
                 } catch (NumberFormatException e) {
                     // Ignore, college will be null
-                }
             }
+        }
         if (college == null) {
             String domain = request.getEmail() != null && request.getEmail().contains("@") 
                 ? request.getEmail().substring(request.getEmail().indexOf("@") + 1).toLowerCase() 
