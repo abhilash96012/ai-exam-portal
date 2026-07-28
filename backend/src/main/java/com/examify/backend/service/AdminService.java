@@ -30,9 +30,20 @@ public class AdminService {
     private final UserRepository userRepository;
     private final ExamRepository examRepository;
     private final CollegeRepository collegeRepository;
+    private final com.examify.backend.repository.SyllabusLibraryRepository syllabusLibraryRepository;
     private final PasswordEncoder passwordEncoder;
     private final DocumentParsingService documentParsingService;
     private final AutomationService automationService;
+
+    @Transactional
+    public void deleteStudent(Long studentId) {
+        userRepository.deleteById(studentId);
+    }
+
+    @Transactional
+    public void deleteSyllabus(Long syllabusId) {
+        syllabusLibraryRepository.deleteById(syllabusId);
+    }
 
     public AdminDto.DashboardStats getDashboardStats(Long adminCollegeId) {
         List<User> users = userRepository.findByCollegeId(adminCollegeId);

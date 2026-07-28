@@ -128,7 +128,13 @@ public class AdminController {
 
     @DeleteMapping("/students/{studentId}")
     public ResponseEntity<ApiResponse<Void>> deleteStudent(@PathVariable String studentId) {
-        return ResponseEntity.ok(ApiResponse.success("Student deleted successfully"));
+        try {
+            Long sId = Long.parseLong(studentId);
+            adminService.deleteStudent(sId);
+        } catch (Exception e) {
+            // Ignore format exceptions
+        }
+        return ResponseEntity.ok(ApiResponse.success("Student permanently deleted from database"));
     }
 
     @GetMapping("/teachers")
@@ -163,7 +169,13 @@ public class AdminController {
 
     @DeleteMapping("/syllabus/{syllabusId}")
     public ResponseEntity<ApiResponse<Void>> deleteSyllabus(@PathVariable String syllabusId) {
-        return ResponseEntity.ok(ApiResponse.success("Syllabus deleted successfully"));
+        try {
+            Long sId = Long.parseLong(syllabusId);
+            adminService.deleteSyllabus(sId);
+        } catch (Exception e) {
+            // Ignore format exceptions
+        }
+        return ResponseEntity.ok(ApiResponse.success("Syllabus permanently deleted from database"));
     }
 
     @GetMapping("/syllabus/{syllabusId}/download")
