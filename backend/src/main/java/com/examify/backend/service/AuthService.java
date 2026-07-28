@@ -70,11 +70,12 @@ public class AuthService {
         }
 
         // Strict domain enforcement: student email domain must match college domain if college domain is set
+        // Allow gmail.com personal accounts gracefully for general student registration
         if (college != null && college.getDomain() != null && !college.getDomain().trim().isEmpty()) {
             String studentDomain = request.getEmail() != null && request.getEmail().contains("@")
                 ? request.getEmail().substring(request.getEmail().indexOf("@") + 1).toLowerCase()
                 : "";
-            if (!studentDomain.equalsIgnoreCase(college.getDomain().toLowerCase())) {
+            if (!"gmail.com".equalsIgnoreCase(studentDomain) && !studentDomain.equalsIgnoreCase(college.getDomain().toLowerCase())) {
                 throw new ApiException(HttpStatus.BAD_REQUEST, "Email domain (@" + studentDomain + ") does not match college domain: @" + college.getDomain());
             }
         }
