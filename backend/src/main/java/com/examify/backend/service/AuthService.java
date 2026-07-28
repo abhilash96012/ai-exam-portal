@@ -78,12 +78,20 @@ public class AuthService {
     }
 
     public AuthDto.AuthResponse login(AuthDto.LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
+        String cleanEmail = request.getEmail() != null ? request.getEmail().trim().toLowerCase() : "";
+        
+        // Find user by email case-insensitively
+        User user = userRepository.findByEmail(cleanEmail)
+                .orElseGet(() -> userRepository.findByEmail(request.getEmail().trim())
+                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Invalid email or password.")));
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Invalid email or password."));
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(user.getEmail(), request.getPassword())
+            );
+        } catch (Exception e) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid email or password.");
+        }
 
         String jwtToken = jwtUtil.generateToken(new CustomUserDetails(user));
 
