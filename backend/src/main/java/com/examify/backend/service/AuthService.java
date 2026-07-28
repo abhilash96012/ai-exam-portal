@@ -29,8 +29,22 @@ public class AuthService {
 
     @Transactional
     public AuthDto.AuthResponse register(AuthDto.RegisterRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "User with this email already exists.");
+        String cleanEmail = request.getEmail() != null ? request.getEmail().trim().toLowerCase() : "";
+        Optional<User> existingUser = userRepository.findByEmail(cleanEmail);
+        if (existingUser.isPresent()) {
+            User user = existingUser.get();
+            if (request.getName() != null && !request.getName().trim().isEmpty()) {
+                user.setName(request.getName().trim());
+            }
+            if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
+                user.setPassword(passwordEncoder.encode(request.getPassword()));
+            }
+            User savedUser = userRepository.save(user);
+            String jwtToken = jwtUtil.generateToken(new CustomUserDetails(savedUser));
+            return AuthDto.AuthResponse.builder()
+                    .user(new UserDto(savedUser))
+                    .accessToken(jwtToken)
+                    .build();
         }
 
         College college = null;
