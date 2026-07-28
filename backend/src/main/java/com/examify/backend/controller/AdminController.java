@@ -105,7 +105,16 @@ public class AdminController {
 
     @GetMapping("/analytics")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getAnalytics() {
-        Map<String, Object> stats = Map.of("totalUsers", 10, "activeExams", 2, "completionRate", 95);
+        Map<String, Object> stats = Map.of(
+            "totalRegisteredStudents", 2,
+            "totalTeachers", 2,
+            "totalExamsCreated", 1,
+            "totalAttempts", 0,
+            "averageScore", 85.5,
+            "examsPerBranch", List.of(Map.of("branch", "CSE", "count", 1), Map.of("branch", "ECE", "count", 0)),
+            "studentsPerDepartment", List.of(Map.of("department", "Computer Science", "count", 2)),
+            "passFailRatio", Map.of("pass", 1, "fail", 0)
+        );
         return ResponseEntity.ok(ApiResponse.success("Analytics loaded", stats));
     }
 

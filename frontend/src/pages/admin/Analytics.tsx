@@ -38,11 +38,13 @@ const Analytics: React.FC = () => {
     return <Loader fullScreen text="Loading analytics..." />;
   }
 
-  const pass = analytics.passFailRatio.pass;
-  const fail = analytics.passFailRatio.fail;
+  const pass = analytics?.passFailRatio?.pass || 0;
+  const fail = analytics?.passFailRatio?.fail || 0;
   const totalPassFail = pass + fail || 1;
   const passPercent = Math.round((pass / totalPassFail) * 100);
   const failPercent = Math.round((fail / totalPassFail) * 100);
+  const examsPerBranch = analytics?.examsPerBranch || [];
+  const studentsPerDepartment = analytics?.studentsPerDepartment || [];
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
@@ -57,31 +59,31 @@ const Analytics: React.FC = () => {
         <div className="bg-white border border-gray-200 rounded-xl p-4">
           <p className="text-xs text-gray-500">Total Students</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">
-            {analytics.totalRegisteredStudents}
+            {analytics?.totalRegisteredStudents || 0}
           </p>
         </div>
         <div className="bg-white border border-gray-200 rounded-xl p-4">
           <p className="text-xs text-gray-500">Total Teachers</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">
-            {analytics.totalTeachers}
+            {analytics?.totalTeachers || 0}
           </p>
         </div>
         <div className="bg-white border border-gray-200 rounded-xl p-4">
           <p className="text-xs text-gray-500">Total Exams</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">
-            {analytics.totalExamsCreated}
+            {analytics?.totalExamsCreated || 0}
           </p>
         </div>
         <div className="bg-white border border-gray-200 rounded-xl p-4">
           <p className="text-xs text-gray-500">Total Attempts</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">
-            {analytics.totalAttempts}
+            {analytics?.totalAttempts || 0}
           </p>
         </div>
         <div className="bg-white border border-gray-200 rounded-xl p-4">
           <p className="text-xs text-gray-500">Average Score</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">
-            {analytics.averageScore.toFixed(2)}%
+            {(analytics?.averageScore || 0).toFixed(2)}%
           </p>
         </div>
       </div>
@@ -92,7 +94,7 @@ const Analytics: React.FC = () => {
             Exams Per Branch
           </h2>
           <div className="space-y-3">
-            {analytics.examsPerBranch.map((item) => (
+            {examsPerBranch.map((item) => (
               <div key={item.branch}>
                 <div className="flex items-center justify-between text-sm mb-1">
                   <span className="text-gray-700">{item.branch}</span>
@@ -108,7 +110,7 @@ const Analytics: React.FC = () => {
                         (item.count /
                           Math.max(
                             1,
-                            ...analytics.examsPerBranch.map((b) => b.count),
+                            ...examsPerBranch.map((b) => b.count),
                           )) *
                         100
                       }%`,
@@ -117,7 +119,7 @@ const Analytics: React.FC = () => {
                 </div>
               </div>
             ))}
-            {analytics.examsPerBranch.length === 0 && (
+            {examsPerBranch.length === 0 && (
               <p className="text-sm text-gray-500">No exam data available.</p>
             )}
           </div>
@@ -128,7 +130,7 @@ const Analytics: React.FC = () => {
             Students Per Department
           </h2>
           <div className="space-y-3">
-            {analytics.studentsPerDepartment.map((item) => (
+            {studentsPerDepartment.map((item) => (
               <div key={item.department}>
                 <div className="flex items-center justify-between text-sm mb-1">
                   <span className="text-gray-700">{item.department}</span>
@@ -144,7 +146,7 @@ const Analytics: React.FC = () => {
                         (item.count /
                           Math.max(
                             1,
-                            ...analytics.studentsPerDepartment.map(
+                            ...studentsPerDepartment.map(
                               (d) => d.count,
                             ),
                           )) *
@@ -155,7 +157,7 @@ const Analytics: React.FC = () => {
                 </div>
               </div>
             ))}
-            {analytics.studentsPerDepartment.length === 0 && (
+            {studentsPerDepartment.length === 0 && (
               <p className="text-sm text-gray-500">
                 No department data available.
               </p>
