@@ -30,12 +30,16 @@ public class DatabaseSeeder implements CommandLineRunner {
             defaultCollege = collegeRepository.findAll().get(0);
         }
 
+        // Clean up legacy non-institutional student accounts (alice@gmail.com)
+        userRepository.findByEmail("alice@gmail.com").ifPresent(userRepository::delete);
+        userRepository.findByEmail("alice@example.com").ifPresent(userRepository::delete);
+
         // 1. Teacher Accounts (Password: 123456789)
         seedOrUpdateUser("mahadev1@gmail.com", "Mahadev Teacher", "123456789", "TEACHER", defaultCollege);
         seedOrUpdateUser("ganesh@sastra.ac.in", "Ganesh J", "123456789", "TEACHER", defaultCollege);
 
-        // 2. Student Accounts (Password: student123)
-        seedOrUpdateUser("alice@gmail.com", "Alice Student", "student123", "STUDENT", defaultCollege);
+        // 2. Official SASTRA Student Accounts (Password: student123)
+        seedOrUpdateUser("alice@sastra.ac.in", "Alice Student", "student123", "STUDENT", defaultCollege);
         seedOrUpdateUser("227003031@sastra.ac.in", "Boganadham Jaya Abhilash", "student123", "STUDENT", defaultCollege);
 
         // 3. Admin Accounts (Password: admin123)
