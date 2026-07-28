@@ -936,6 +936,10 @@ const AdminDashboard: React.FC = () => {
             </div>
           )}
 
+          {renderSyllabusTable()}
+        </div>
+      </motion.section>
+
       {showSubjectModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
           <motion.div
@@ -953,7 +957,7 @@ const AdminDashboard: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowSubjectModal(false)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 text-lg leading-none"
               >
                 ✕
               </button>
@@ -969,7 +973,7 @@ const AdminDashboard: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleRemoveSubject(subject)}
-                    className="text-indigo-400 hover:text-red-600 font-bold transition-colors"
+                    className="text-indigo-400 hover:text-red-600 font-bold text-sm leading-none transition-colors"
                     title="Remove Subject"
                   >
                     ×
@@ -997,10 +1001,6 @@ const AdminDashboard: React.FC = () => {
           </motion.div>
         </div>
       )}
-
-          {renderSyllabusTable()}
-        </div>
-      </motion.section>
     </div>
   );
 };
