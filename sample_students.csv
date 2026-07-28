@@ -1,0 +1,6 @@
+name,email,registration_number,branch,department,password
+John Doe,johndoe.teststudent1@gmail.com,REG2026001,Computer Science Engineering,School of Computing,student123
+Jane Smith,janesmith.teststudent2@gmail.com,REG2026002,Information Technology,School of Computing,student123
+Robert Johnson,robert.teststudent3@gmail.com,REG2026003,Electronics & Communication,School of Electrical,student123
+Emily Davis,emily.teststudent4@gmail.com,REG2026004,Mechanical Engineering,School of Mechanical,student123
+Michael Brown,michael.teststudent5@gmail.com,REG2026005,Civil Engineering,School of Civil,student123

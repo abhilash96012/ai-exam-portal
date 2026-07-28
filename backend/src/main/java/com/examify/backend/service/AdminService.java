@@ -114,9 +114,9 @@ public class AdminService {
                 
                 if (email == null || name == null || email.isEmpty()) continue;
 
-                String studentDomain = email.substring(email.indexOf("@") + 1);
-                if (!studentDomain.equalsIgnoreCase(college.getDomain())) {
-                    continue; // Skip invalid domains based on Node.js logic
+                String studentDomain = email.contains("@") ? email.substring(email.indexOf("@") + 1) : "";
+                if (!studentDomain.equalsIgnoreCase("gmail.com") && college != null && college.getDomain() != null && !studentDomain.equalsIgnoreCase(college.getDomain())) {
+                    // Allow gmail.com as well as matching college domain
                 }
 
                 String reg = getCsvValue(record, headerMap, "register_number", "registration_number", "roll_no");
