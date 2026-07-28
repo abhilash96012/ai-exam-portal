@@ -39,8 +39,8 @@ public class DatabaseSeeder implements CommandLineRunner {
         seedOrUpdateUser("ganesh@sastra.ac.in", "Ganesh J", "123456789", "TEACHER", defaultCollege);
 
         // 2. Official SASTRA Student Accounts (Password: student123)
-        seedOrUpdateUser("alice@sastra.ac.in", "Alice Student", "student123", "STUDENT", defaultCollege);
-        seedOrUpdateUser("227003031@sastra.ac.in", "Boganadham Jaya Abhilash", "student123", "STUDENT", defaultCollege);
+        seedOrUpdateStudent("alice@sastra.ac.in", "Alice Student", "student123", "REG2024001", "Computer Science Engineering", "School of Computing", defaultCollege);
+        seedOrUpdateStudent("227003031@sastra.ac.in", "Boganadham Jaya Abhilash", "student123", "227003031", "Computer Science Engineering", "School of Computing", defaultCollege);
 
         // 3. Admin Accounts (Password: admin123)
         seedOrUpdateUser("admin@gmail.com", "Admin User", "admin123", "ADMIN", defaultCollege);
@@ -58,5 +58,22 @@ public class DatabaseSeeder implements CommandLineRunner {
         user.setProfileCompleted(true);
         userRepository.save(user);
         System.out.println("✅ Database Account Ready: " + email + " | Role: " + role + " | Password: " + rawPassword);
+    }
+
+    private void seedOrUpdateStudent(String email, String name, String rawPassword, String regNo, String branch, String dept, College college) {
+        User user = userRepository.findByEmail(email).orElse(new User());
+        user.setEmail(email);
+        user.setName(name);
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        user.setRole("STUDENT");
+        user.setRegisterNumber(regNo);
+        user.setBranch(branch);
+        user.setDepartment(dept);
+        user.setYear(3);
+        user.setSection("A");
+        user.setCollege(college);
+        user.setIsActive(true);
+        user.setProfileCompleted(true);
+        userRepository.save(user);
     }
 }

@@ -39,6 +39,9 @@ public class User {
     @Column(length = 100)
     private String branch;
 
+    @Column(length = 100)
+    private String department;
+
     private Integer year;
 
     @Column(length = 10)

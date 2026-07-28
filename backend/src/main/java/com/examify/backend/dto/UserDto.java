@@ -13,6 +13,7 @@ public class UserDto {
     private String role;
     private Long collegeId;
     private String branch;
+    private String department;
     private Integer year;
     private String section;
     private String registerNumber;
@@ -25,6 +26,7 @@ public class UserDto {
         this.role = user.getRole();
         this.collegeId = user.getCollege() != null ? user.getCollege().getId() : null;
         this.branch = user.getBranch();
+        this.department = user.getDepartment() != null ? user.getDepartment() : user.getBranch();
         this.year = user.getYear();
         this.section = user.getSection();
         this.registerNumber = user.getRegisterNumber();

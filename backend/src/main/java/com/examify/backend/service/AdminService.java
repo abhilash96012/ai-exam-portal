@@ -90,6 +90,7 @@ public class AdminService {
         student.setRole("STUDENT");
         student.setRegisterNumber(request.getRegistration_number());
         student.setBranch(request.getBranch() != null ? request.getBranch() : request.getDepartment());
+        student.setDepartment(request.getDepartment() != null ? request.getDepartment() : request.getBranch());
         student.setYear(1);
         student.setCollege(college);
         student.setProfileCompleted(true);
@@ -135,7 +136,11 @@ public class AdminService {
                 }
 
                 String reg = getCsvValue(record, headerMap, "register_number", "registration_number", "roll_no");
-                String branch = getCsvValue(record, headerMap, "branch", "department");
+                String branch = getCsvValue(record, headerMap, "branch");
+                String department = getCsvValue(record, headerMap, "department", "school");
+                if (branch == null) branch = department != null ? department : "General";
+                if (department == null) department = branch;
+
                 String rawPassword = getCsvValue(record, headerMap, "password");
                 if (rawPassword == null || rawPassword.isEmpty()) rawPassword = "student123";
 
@@ -144,14 +149,15 @@ public class AdminService {
                     User user = existingOpt.get();
                     user.setName(name);
                     user.setRegisterNumber(reg);
-                    user.setBranch(branch != null ? branch : "General");
+                    user.setBranch(branch);
+                    user.setDepartment(department);
                     if (getCsvValue(record, headerMap, "password") != null) {
                         user.setPassword(passwordEncoder.encode(rawPassword));
                     }
                     userRepository.save(user);
                     updatedCount++;
                 } else {
-                    User user = createBaseUser(name, email, reg, branch, passwordEncoder.encode(rawPassword), college);
+                    User user = createBaseUser(name, email, reg, branch, department, passwordEncoder.encode(rawPassword), college);
                     userRepository.save(user);
                     insertedCount++;
                 }
@@ -167,7 +173,7 @@ public class AdminService {
         return result;
     }
 
-    private static User createBaseUser(String name, String email, String reg, String branch, String encodedPassword, College college) {
+    private static User createBaseUser(String name, String email, String reg, String branch, String department, String encodedPassword, College college) {
         User user = new User();
         user.setName(name);
         user.setEmail(email);
@@ -175,6 +181,7 @@ public class AdminService {
         user.setRole("STUDENT");
         user.setRegisterNumber(reg);
         user.setBranch(branch != null ? branch : "General");
+        user.setDepartment(department != null ? department : (branch != null ? branch : "School of Computing"));
         user.setYear(1);
         user.setCollege(college);
         user.setProfileCompleted(true);
