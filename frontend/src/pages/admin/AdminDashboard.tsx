@@ -65,6 +65,21 @@ const defaultYearOptions = [
   { label: "Final Year", value: "4" },
 ];
 
+const defaultSubjectOptions = [
+  "Data Structures & Algorithms",
+  "Database Management Systems",
+  "Operating Systems",
+  "Computer Networks",
+  "Artificial Intelligence",
+  "Machine Learning",
+  "Software Engineering",
+  "Web Development",
+  "Cyber Security",
+  "Cloud Computing",
+  "Discrete Mathematics",
+  "Theory of Computation",
+];
+
 const defaultSyllabusOptions: SyllabusOptions = {
   branches: [],
   departments: [],
@@ -175,18 +190,72 @@ const AdminDashboard: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const syllabusSectionRef = useRef<HTMLElement | null>(null);
 
+  const [showSubjectModal, setShowSubjectModal] = useState(false);
+
   const resolvedBranchOptions = syllabusOptions.branches.length
     ? syllabusOptions.branches
     : defaultBranchOptions;
   const resolvedDepartmentOptions = syllabusOptions.departments.length
     ? syllabusOptions.departments
     : defaultDepartmentOptions;
+  const resolvedSubjectOptions = syllabusOptions.subjects.length
+    ? syllabusOptions.subjects
+    : defaultSubjectOptions;
   const resolvedYearOptions = syllabusOptions.years.length
     ? syllabusOptions.years.map((year) => ({
         label: toYearLabel(year),
         value: String(year),
       }))
     : defaultYearOptions;
+
+  const handleAddBranch = () => {
+    const name = window.prompt("Enter new Branch name (e.g., Artificial Intelligence & Data Science):");
+    if (!name || !name.trim()) return;
+    const cleanName = name.trim();
+    if (resolvedBranchOptions.some((b) => b.trim().toLowerCase() === cleanName.toLowerCase())) {
+      window.alert(`Branch "${cleanName}" already exists! Duplicate entry is not allowed.`);
+      return;
+    }
+    setSyllabusOptions((prev) => ({
+      ...prev,
+      branches: Array.from(new Set([...resolvedBranchOptions, cleanName])),
+    }));
+  };
+
+  const handleAddDepartment = () => {
+    const name = window.prompt("Enter new Department name (e.g., School of Computing):");
+    if (!name || !name.trim()) return;
+    const cleanName = name.trim();
+    if (resolvedDepartmentOptions.some((d) => d.trim().toLowerCase() === cleanName.toLowerCase())) {
+      window.alert(`Department "${cleanName}" already exists! Duplicate entry is not allowed.`);
+      return;
+    }
+    setSyllabusOptions((prev) => ({
+      ...prev,
+      departments: Array.from(new Set([...resolvedDepartmentOptions, cleanName])),
+    }));
+  };
+
+  const handleAddSubject = () => {
+    const name = window.prompt("Enter new Subject name (e.g., Machine Learning):");
+    if (!name || !name.trim()) return;
+    const cleanName = name.trim();
+    if (resolvedSubjectOptions.some((s) => s.trim().toLowerCase() === cleanName.toLowerCase())) {
+      window.alert(`Subject "${cleanName}" already exists! Duplicate entry is not allowed.`);
+      return;
+    }
+    setSyllabusOptions((prev) => ({
+      ...prev,
+      subjects: Array.from(new Set([...resolvedSubjectOptions, cleanName])),
+    }));
+  };
+
+  const handleRemoveSubject = (subName: string) => {
+    setSyllabusOptions((prev) => ({
+      ...prev,
+      subjects: resolvedSubjectOptions.filter((s) => s !== subName),
+    }));
+  };
 
   const loadSyllabusData = useCallback(async () => {
     setIsSyllabusLoading(true);
@@ -626,48 +695,31 @@ const AdminDashboard: React.FC = () => {
           <div className="flex flex-wrap gap-2 mb-4">
             <button
               type="button"
-              onClick={() => {
-                const name = window.prompt("Enter new Branch name (e.g., Artificial Intelligence & Data Science):");
-                if (name && name.trim()) {
-                  setSyllabusOptions(prev => ({
-                    ...prev,
-                    branches: Array.from(new Set([...prev.branches, name.trim()]))
-                  }));
-                }
-              }}
+              onClick={handleAddBranch}
               className="rounded-lg bg-indigo-100 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-200 transition-colors cursor-pointer"
             >
               + Add Branch
             </button>
             <button
               type="button"
-              onClick={() => {
-                const name = window.prompt("Enter new Department name (e.g., School of Computing):");
-                if (name && name.trim()) {
-                  setSyllabusOptions(prev => ({
-                    ...prev,
-                    departments: Array.from(new Set([...prev.departments, name.trim()]))
-                  }));
-                }
-              }}
+              onClick={handleAddDepartment}
               className="rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-200 transition-colors cursor-pointer"
             >
               + Add Department
             </button>
             <button
               type="button"
-              onClick={() => {
-                const name = window.prompt("Enter new Subject name (e.g., Machine Learning):");
-                if (name && name.trim()) {
-                  setSyllabusOptions(prev => ({
-                    ...prev,
-                    subjects: Array.from(new Set([...prev.subjects, name.trim()]))
-                  }));
-                }
-              }}
+              onClick={handleAddSubject}
               className="rounded-lg bg-cyan-100 px-3 py-1.5 text-xs font-semibold text-cyan-700 hover:bg-cyan-200 transition-colors cursor-pointer"
             >
               + Add Subject
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowSubjectModal(true)}
+              className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
+            >
+              📋 View Added Subjects ({resolvedSubjectOptions.length})
             </button>
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -882,6 +934,68 @@ const AdminDashboard: React.FC = () => {
               {syllabusError}
             </div>
           )}
+
+      {showSubjectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl border border-slate-200"
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-indigo-600" /> Configured Academic Subjects
+                </h3>
+                <p className="text-xs text-slate-500">Total: {resolvedSubjectOptions.length} subjects registered</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSubjectModal(false)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="flex flex-wrap gap-2 max-h-80 overflow-y-auto p-1 mb-2">
+              {resolvedSubjectOptions.map((subject, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-2 rounded-lg bg-indigo-50 border border-indigo-100 px-3 py-1.5 text-xs font-semibold text-indigo-800"
+                >
+                  <span>{subject}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveSubject(subject)}
+                    className="text-indigo-400 hover:text-red-600 font-bold transition-colors"
+                    title="Remove Subject"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 flex justify-between items-center border-t border-slate-100 pt-4">
+              <button
+                type="button"
+                onClick={handleAddSubject}
+                className="rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-indigo-700 transition-colors"
+              >
+                + Add Another Subject
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowSubjectModal(false)}
+                className="rounded-lg bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
           {renderSyllabusTable()}
         </div>
