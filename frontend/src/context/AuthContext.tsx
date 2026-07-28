@@ -37,88 +37,63 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [profileCompleted, setProfileCompleted] = useState<boolean>(false);
   const [isInitializing, setIsInitializing] = useState<boolean>(true);
 
-  // Hydrate auth state from localStorage and backend once on app start
+  // Hydrate auth state from backend on app start
   useEffect(() => {
     const hydrate = async () => {
       try {
-        let hydratedUser: User | null = null;
-        let hydratedProfileCompleted = false;
         const token =
           localStorage.getItem("authToken") ||
           localStorage.getItem("token") ||
           localStorage.getItem("accessToken");
 
-        // 1) Trust local snapshot only when a token exists
         if (token) {
           try {
-            const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-            if (raw) {
-              const parsed = JSON.parse(raw);
-              if (parsed?.user) {
-                hydratedUser = parsed.user;
-              }
-              hydratedProfileCompleted = Boolean(parsed?.profileCompleted);
-            }
-          } catch {
-            // ignore storage errors
-          }
-        } else {
-          try {
-            localStorage.removeItem(AUTH_STORAGE_KEY);
-          } catch {
-            // ignore storage errors
-          }
-        }
+            const response = await api.get("/auth/me");
+            const me = response.data?.data?.user;
 
-        // 2) If no hydrated user but we have a token, ask backend
-        if (!hydratedUser) {
-          if (token) {
-            try {
-              const response = await api.get("/auth/me");
-              const me = response.data?.data?.user;
+            if (me) {
+              const freshUser: User = {
+                id: me.id,
+                name: me.name,
+                email: me.email,
+                role: me.role,
+                branch: me.branch ?? null,
+                year: me.year ?? null,
+                section: me.section ?? null,
+                registerNumber: me.registerNumber ?? null,
+                profileCompleted: me.profileCompleted,
+              };
+              setUser(freshUser);
+              setProfileCompleted(
+                me.role !== "STUDENT" || Boolean(me.profileCompleted)
+              );
 
-              if (me) {
-                hydratedUser = {
-                  id: me.id,
-                  name: me.name,
-                  email: me.email,
-                  role: me.role,
-                  branch: me.branch ?? null,
-                  year: me.year ?? null,
-                  section: me.section ?? null,
-                  registerNumber: me.registerNumber ?? null,
-                };
-                hydratedProfileCompleted = Boolean(me.profileCompleted);
-
-                try {
-                  localStorage.setItem(
-                    AUTH_STORAGE_KEY,
-                    JSON.stringify({
-                      user: hydratedUser,
-                      profileCompleted: hydratedProfileCompleted,
-                    }),
-                  );
-                } catch {
-                  // ignore storage errors
-                }
-              }
-            } catch {
-              // Token is likely invalid; clear all auth state to avoid loops
               try {
-                localStorage.removeItem(AUTH_STORAGE_KEY);
-                localStorage.removeItem("authToken");
-                localStorage.removeItem("token");
-                localStorage.removeItem("accessToken");
+                localStorage.setItem(
+                  AUTH_STORAGE_KEY,
+                  JSON.stringify({
+                    user: freshUser,
+                    profileCompleted:
+                      me.role !== "STUDENT" || Boolean(me.profileCompleted),
+                  })
+                );
               } catch {
                 // ignore storage errors
               }
             }
+          } catch {
+            // Token expired or invalid
+            try {
+              localStorage.removeItem(AUTH_STORAGE_KEY);
+              localStorage.removeItem("authToken");
+              localStorage.removeItem("token");
+              localStorage.removeItem("accessToken");
+            } catch {
+              // ignore storage errors
+            }
+            setUser(null);
+            setProfileCompleted(false);
           }
-        }
-
-        if (hydratedUser) {
-          setUser(hydratedUser);
-          setProfileCompleted(hydratedProfileCompleted);
         }
       } finally {
         setIsInitializing(false);
