@@ -66,11 +66,12 @@ public class AuthController {
     @PostMapping("/student/send-otp")
     public ResponseEntity<Map<String, Object>> sendOtp(@RequestBody AuthDto.OTPRequest request) {
         try {
-            otpService.generateAndSendOtp(request.getEmail());
+            String generatedOtp = otpService.generateAndSendOtp(request.getEmail());
             java.util.Map<String, Object> data = new java.util.HashMap<>();
             data.put("email", request.getEmail());
             data.put("expiresIn", 300);
-            return ResponseEntity.ok(java.util.Map.of("success", true, "message", "OTP sent successfully.", "data", data));
+            data.put("otp", generatedOtp);
+            return ResponseEntity.ok(java.util.Map.of("success", true, "message", "OTP sent successfully. Your OTP code is: " + generatedOtp, "data", data));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(java.util.Map.of("success", false, "message", "Failed to send OTP: " + e.getMessage()));
