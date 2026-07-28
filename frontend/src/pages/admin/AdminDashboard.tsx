@@ -100,10 +100,29 @@ const defaultSyllabusOverview: SyllabusOverview = {
   },
 };
 
-const statusLabelMap: Record<SyllabusStatus, string> = {
+const statusLabelMap: Record<string, string> = {
+  APPROVED: "Approved",
+  PENDING: "Pending",
+  REJECTED: "Rejected",
   UPLOADED: "Uploaded",
   PROCESSING: "Processing",
   READY: "Ready",
+};
+
+const getStatusBadgeStyles = (status?: string) => {
+  switch (status?.toUpperCase()) {
+    case "APPROVED":
+    case "READY":
+      return "bg-emerald-100 text-emerald-800 border border-emerald-200";
+    case "PENDING":
+    case "PROCESSING":
+    case "UPLOADED":
+      return "bg-amber-100 text-amber-800 border border-amber-200";
+    case "REJECTED":
+      return "bg-red-100 text-red-800 border border-red-200";
+    default:
+      return "bg-slate-100 text-slate-800 border border-slate-200";
+  }
 };
 
 const formatFileSize = (bytes: number) => {
@@ -118,18 +137,6 @@ const formatFileSize = (bytes: number) => {
   }
 
   return `${(kb / 1024).toFixed(2)} MB`;
-};
-
-const getStatusBadgeStyles = (status: SyllabusStatus) => {
-  if (status === "READY") {
-    return "bg-emerald-50 text-emerald-700 border border-emerald-200";
-  }
-
-  if (status === "PROCESSING") {
-    return "bg-amber-50 text-amber-700 border border-amber-200";
-  }
-
-  return "bg-blue-50 text-blue-700 border border-blue-200";
 };
 
 const toYearLabel = (year: number) => {
@@ -193,16 +200,16 @@ const AdminDashboard: React.FC = () => {
 
   const [showSubjectModal, setShowSubjectModal] = useState(false);
 
-  const resolvedBranchOptions = syllabusOptions.branches.length
+  const resolvedBranchOptions = Array.isArray(syllabusOptions?.branches) && syllabusOptions.branches.length
     ? syllabusOptions.branches
     : defaultBranchOptions;
-  const resolvedDepartmentOptions = syllabusOptions.departments.length
+  const resolvedDepartmentOptions = Array.isArray(syllabusOptions?.departments) && syllabusOptions.departments.length
     ? syllabusOptions.departments
     : defaultDepartmentOptions;
-  const resolvedSubjectOptions = syllabusOptions.subjects.length
+  const resolvedSubjectOptions = Array.isArray(syllabusOptions?.subjects) && syllabusOptions.subjects.length
     ? syllabusOptions.subjects
     : defaultSubjectOptions;
-  const resolvedYearOptions = syllabusOptions.years.length
+  const resolvedYearOptions = Array.isArray(syllabusOptions?.years) && syllabusOptions.years.length
     ? syllabusOptions.years.map((year) => ({
         label: toYearLabel(year),
         value: String(year),
@@ -543,7 +550,7 @@ const AdminDashboard: React.FC = () => {
                   <span
                     className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusBadgeStyles(record.status)}`}
                   >
-                    {statusLabelMap[record.status]}
+                    {statusLabelMap[record.status] || record.status || "Uploaded"}
                   </span>
                 </td>
                 <td className="px-4 py-3">
@@ -739,7 +746,7 @@ const AdminDashboard: React.FC = () => {
             <div className="rounded-lg bg-cyan-50 p-3 border border-cyan-100">
               <p className="text-[11px] text-cyan-600">Total Subjects</p>
               <p className="text-lg font-bold text-cyan-900">
-                {syllabusOverview.total_subjects > 0 ? syllabusOverview.total_subjects : (syllabusOptions.subjects.length || 12)}
+                {syllabusOverview?.total_subjects > 0 ? syllabusOverview.total_subjects : resolvedSubjectOptions.length}
               </p>
             </div>
             <div className="rounded-lg bg-sky-50 p-3 border border-sky-100">
